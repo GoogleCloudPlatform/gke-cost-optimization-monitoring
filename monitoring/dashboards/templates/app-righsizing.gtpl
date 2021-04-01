@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-displayName: GKE - App Right Sizing (CLUSTER_TO_REPLACE:{{- (index .items 0).metadata.namespace -}})
+displayName: GKE - App Right Sizing (CLUSTER_TO_REPLACE:NAMESPACE_TO_REPLACE)
 mosaicLayout:
   columns: 12
   tiles:
@@ -31,7 +31,7 @@ mosaicLayout:
                     | metric 'kubernetes.io/container/cpu/request_cores'
                     | filter
                         (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                        && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                        && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                     | group_by 1m, [value_request_cores_mean: mean(value.request_cores)]
                     | every 1m
                     | group_by [cluster_name: resource.cluster_name],
@@ -44,7 +44,7 @@ mosaicLayout:
                           | metric 'custom.googleapis.com/podautoscaler/vpa/cpu/target_recommendation'
                           | filter 
                               (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                              && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                              && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                           | group_by 1m, [value_cpu_mean: mean(value.target_recommendation)]
                           | every 1m
                           | group_by [cluster_name: resource.cluster_name, kind:metric.targetref_kind, controller_name:metric.targetref_name],
@@ -54,7 +54,7 @@ mosaicLayout:
                           | metric 'custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization'
                           | filter 
                               (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                              && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                              && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                           | group_by 1m, [value_cpu_mean: mean(value.target_utilization)]
                           | every 1m
                           | group_by [cluster_name: resource.cluster_name, kind:metric.targetref_kind, controller_name:metric.targetref_name],
@@ -70,7 +70,7 @@ mosaicLayout:
                         | metric 'kubernetes.io/pod/volume/total_bytes'
                         | filter
                             (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                            && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                            && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                         | group_by 1m, [mean(val())]
                         | every 1m
                         | group_by [cluster_name:resource.cluster_name, controller_name:metadata.system_labels.top_level_controller_name],
@@ -106,7 +106,7 @@ mosaicLayout:
                     | metric 'kubernetes.io/container/memory/request_bytes'
                     | filter
                         (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                        && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                        && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                     | group_by 1m, [value_request_bytes_mean: mean(value.request_bytes)]
                     | every 1m
                     | group_by [cluster_name: resource.cluster_name],
@@ -119,7 +119,7 @@ mosaicLayout:
                         | metric 'custom.googleapis.com/podautoscaler/vpa/memory/target_recommendation'
                         | filter
                             (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                            && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                            && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                         | group_by 1m,
                             [value_vpa_recommendation_mean: mean(value.target_recommendation)]
                         | every 1m
@@ -131,7 +131,7 @@ mosaicLayout:
                         | metric 'kubernetes.io/pod/volume/total_bytes'
                         | filter
                             (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                            && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                            && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                         | group_by 1m, [mean(val())]
                         | every 1m
                         | group_by [cluster_name:resource.cluster_name, controller_name:metadata.system_labels.top_level_controller_name],
@@ -169,7 +169,7 @@ mosaicLayout:
                     | metric 'kubernetes.io/container/cpu/request_cores'
                     | filter
                         (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                        && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                        && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                     | group_by 1m, [value_request_cores_mean: mean(value.request_cores)]
                     | every 1m
                     | group_by [cluster_name: resource.cluster_name, controller_name:metadata.system_labels.top_level_controller_name],
@@ -183,7 +183,7 @@ mosaicLayout:
                           | metric 'custom.googleapis.com/podautoscaler/vpa/cpu/target_recommendation'
                           | filter 
                               (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                              && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                              && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                           | group_by 1m, [value_cpu_mean: mean(value.target_recommendation)]
                           | every 1m
                           | group_by [cluster_name: resource.cluster_name, kind:metric.targetref_kind, controller_name:metric.targetref_name],
@@ -193,7 +193,7 @@ mosaicLayout:
                           | metric 'custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization'
                           | filter 
                               (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                              && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                              && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                           | group_by 1m, [value_cpu_mean: mean(value.target_utilization)]
                           | every 1m
                           | group_by [cluster_name: resource.cluster_name, kind:metric.targetref_kind, controller_name:metric.targetref_name],
@@ -209,7 +209,7 @@ mosaicLayout:
                         | metric 'kubernetes.io/pod/volume/total_bytes'
                         | filter
                             (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                            && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                            && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                         | group_by 1m, [mean(val())]
                         | every 1m
                         | group_by [cluster_name:resource.cluster_name, controller_name:metadata.system_labels.top_level_controller_name],
@@ -246,7 +246,7 @@ mosaicLayout:
                     | metric 'kubernetes.io/container/memory/request_bytes'
                     | filter
                         (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                        && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                        && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                     | group_by 1m, [value_request_bytes_mean: mean(value.request_bytes)]
                     | every 1m
                     | group_by [cluster_name: resource.cluster_name, controller_name:metadata.system_labels.top_level_controller_name],
@@ -259,7 +259,7 @@ mosaicLayout:
                         | metric 'custom.googleapis.com/podautoscaler/vpa/memory/target_recommendation'
                         | filter
                             (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                            && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                            && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                         | group_by 1m,
                             [value_vpa_recommendation_mean: mean(value.target_recommendation)]
                         | every 1m
@@ -271,7 +271,7 @@ mosaicLayout:
                         | metric 'kubernetes.io/pod/volume/total_bytes'
                         | filter
                             (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                            && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                            && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                         | group_by 1m, [mean(val())]
                         | every 1m
                         | group_by [cluster_name:resource.cluster_name, controller_name:metadata.system_labels.top_level_controller_name],
@@ -310,7 +310,7 @@ mosaicLayout:
                     | metric 'kubernetes.io/container/cpu/request_cores'
                     | filter
                         (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                        && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                        && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                     | group_by 1m, [value_request_cores_mean: mean(value.request_cores)]
                     | every 1m
                     | group_by [cluster_name: resource.cluster_name, controller_name:metadata.system_labels.top_level_controller_name],
@@ -324,7 +324,7 @@ mosaicLayout:
                           | metric 'custom.googleapis.com/podautoscaler/vpa/cpu/target_recommendation'
                           | filter 
                               (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                              && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                              && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                           | group_by 1m, [value_cpu_mean: mean(value.target_recommendation)]
                           | every 1m
                           | group_by [cluster_name: resource.cluster_name, kind:metric.targetref_kind, controller_name:metric.targetref_name],
@@ -334,7 +334,7 @@ mosaicLayout:
                           | metric 'custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization'
                           | filter 
                               (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                              && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                              && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                           | group_by 1m, [value_cpu_mean: mean(value.target_utilization)]
                           | every 1m
                           | group_by [cluster_name: resource.cluster_name, kind:metric.targetref_kind, controller_name:metric.targetref_name],
@@ -350,7 +350,7 @@ mosaicLayout:
                         | metric 'kubernetes.io/pod/volume/total_bytes'
                         | filter
                             (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                            && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                            && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                         | group_by 1m, [mean(val())]
                         | every 1m
                         | group_by [cluster_name:resource.cluster_name, controller_name:metadata.system_labels.top_level_controller_name],
@@ -387,7 +387,7 @@ mosaicLayout:
                     | metric 'kubernetes.io/container/memory/request_bytes'
                     | filter
                         (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                        && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                        && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                     | group_by 1m, [value_request_bytes_mean: mean(value.request_bytes)]
                     | every 1m
                     | group_by [cluster_name: resource.cluster_name, controller_name:metadata.system_labels.top_level_controller_name],
@@ -400,7 +400,7 @@ mosaicLayout:
                         | metric 'custom.googleapis.com/podautoscaler/vpa/memory/target_recommendation'
                         | filter
                             (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                            && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                            && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                         | group_by 1m,
                             [value_vpa_recommendation_mean: mean(value.target_recommendation)]
                         | every 1m
@@ -412,7 +412,7 @@ mosaicLayout:
                         | metric 'kubernetes.io/pod/volume/total_bytes'
                         | filter
                             (resource.cluster_name == 'CLUSTER_TO_REPLACE'
-                            && resource.namespace_name == '{{- (index .items 0).metadata.namespace -}}')
+                            && resource.namespace_name == 'NAMESPACE_TO_REPLACE')
                         | group_by 1m, [mean(val())]
                         | every 1m
                         | group_by [cluster_name:resource.cluster_name, controller_name:metadata.system_labels.top_level_controller_name],
@@ -516,8 +516,8 @@ mosaicLayout:
                     		[target: mean(value_cpu_mean)]
                   }
                   | outer_join [0],[0]
-                  | value [recommendation: vpa.recommendation + (if( gt(hpa.target,0),  vpa.recommendation * (100 - hpa.target) / 100,  cast_double(0) )) ]
-                  | group_by [metric: 'recommended_cores'], 
+                  | value [recommendation: if( gt(hpa.target, 0),  string_to_double("no-value-hack"), vpa.recommendation ) ]
+                  | group_by [metric: 'vpa_recommended_cores'], 
                       [avg_value: mean(recommendation)]
               ;
                   { requested:
