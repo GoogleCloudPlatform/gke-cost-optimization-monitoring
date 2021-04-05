@@ -107,6 +107,10 @@ spec:
 	if got := hpa.TargetCPUPercentage; got != expectedCPU {
 		t.Errorf("Expected target CPU %+v, got %+v", expectedCPU, got)
 	}
+	expectedMemory := int32(0)
+	if got := hpa.TargetMemoryPercentage; got != expectedMemory {
+		t.Errorf("Expected target Memory %+v, got %+v", expectedMemory, got)
+	}
 }
 
 func TestHPANoMinReplicasV2beta2(t *testing.T) {
@@ -137,6 +141,83 @@ spec:
 	expectedMinReplicas := int32(1)
 	if got := hpa.MinReplicas; got != expectedMinReplicas {
 		t.Errorf("Expected Min Replicas %+v, got %+v", expectedMinReplicas, got)
+	}
+}
+
+func TestHPATargetMemoryV2beta2(t *testing.T) {
+	yaml := `apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: test-memory-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       test
+  minReplicas: 2
+  maxReplicas: 100
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 60`
+
+	hpa, err := decodeHPA([]byte(yaml))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if hpa.TargetCPUPercentage != 0 {
+		t.Error("Target CPU should be zero")
+	}
+	expectedMemory := int32(60)
+	if got := hpa.TargetMemoryPercentage; got != expectedMemory {
+		t.Errorf("Expected target Memory %+v, got %+v", expectedMemory, got)
+	}
+}
+
+func TestHPATargetCPUAndMemoryV2beta2(t *testing.T) {
+	yaml := `apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: test-memory-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind:       Deployment
+    name:       test
+  minReplicas: 2
+  maxReplicas: 100
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 60`
+
+	hpa, err := decodeHPA([]byte(yaml))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expectedCPU := int32(50)
+	if got := hpa.TargetCPUPercentage; got != expectedCPU {
+		t.Errorf("Expected target CPU %+v, got %+v", expectedCPU, got)
+	}
+	expectedMemory := int32(60)
+	if got := hpa.TargetMemoryPercentage; got != expectedMemory {
+		t.Errorf("Expected target Memory %+v, got %+v", expectedMemory, got)
 	}
 }
 
@@ -218,6 +299,10 @@ spec:
 	if got := hpa.TargetCPUPercentage; got != expectedCPU {
 		t.Errorf("Expected target CPU %+v, got %+v", expectedCPU, got)
 	}
+	expectedMemory := int32(0)
+	if got := hpa.TargetMemoryPercentage; got != expectedMemory {
+		t.Errorf("Expected target Memory %+v, got %+v", expectedMemory, got)
+	}
 }
 
 func TestHPANoMinReplicasV2beta1(t *testing.T) {
@@ -247,6 +332,77 @@ spec:
 	expectedMinReplicas := int32(1)
 	if got := hpa.MinReplicas; got != expectedMinReplicas {
 		t.Errorf("Expected Min Replicas %+v, got %+v", expectedMinReplicas, got)
+	}
+}
+
+func TestHPATargetMemoryV2beta1(t *testing.T) {
+	yaml := `apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: test-memory-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind:       Deployment
+    name:       test
+  minReplicas: 2
+  maxReplicas: 100
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      targetAverageUtilization: 60`
+
+	hpa, err := decodeHPA([]byte(yaml))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if hpa.TargetCPUPercentage != 0 {
+		t.Error("Target CPU should be zero")
+	}
+	expectedMemory := int32(60)
+	if got := hpa.TargetMemoryPercentage; got != expectedMemory {
+		t.Errorf("Expected target Memory %+v, got %+v", expectedMemory, got)
+	}
+}
+
+func TestHPATargetCPUAndMemoryV2beta1(t *testing.T) {
+	yaml := `apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: test-memory-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind:       Deployment
+    name:       test
+  minReplicas: 2
+  maxReplicas: 100
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 50  
+  - type: Resource
+    resource:
+      name: memory
+      targetAverageUtilization: 60`
+
+	hpa, err := decodeHPA([]byte(yaml))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expectedCPU := int32(50)
+	if got := hpa.TargetCPUPercentage; got != expectedCPU {
+		t.Errorf("Expected target CPU %+v, got %+v", expectedCPU, got)
+	}
+	expectedMemory := int32(60)
+	if got := hpa.TargetMemoryPercentage; got != expectedMemory {
+		t.Errorf("Expected target Memory %+v, got %+v", expectedMemory, got)
 	}
 }
 
@@ -325,6 +481,10 @@ spec:
 	expectedCPU := int32(80)
 	if got := hpa.TargetCPUPercentage; got != expectedCPU {
 		t.Errorf("Expected target CPU %+v, got %+v", expectedCPU, got)
+	}
+	expectedMemory := int32(0)
+	if got := hpa.TargetMemoryPercentage; got != expectedMemory {
+		t.Errorf("Expected target Memory %+v, got %+v", expectedMemory, got)
 	}
 }
 

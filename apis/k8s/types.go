@@ -63,10 +63,11 @@ type VPA struct {
 // HPA is the simplified reprsentation of k8s HPA
 // Client doesn't need to handle different version and the complexity of k8s.io package
 type HPA struct {
-	Namespace           string
-	Name                string
-	TargetRef           TargetRef
-	MinReplicas         int32
-	MaxReplicas         int32
-	TargetCPUPercentage int32
+	Namespace              string
+	Name                   string
+	TargetRef              TargetRef
+	MinReplicas            int32
+	MaxReplicas            int32
+	TargetCPUPercentage    int32
+	TargetMemoryPercentage int32
 }

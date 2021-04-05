@@ -77,7 +77,8 @@ func buildHPA(obj interface{}, groupVersionKind GroupVersionKind) (HPA, error) {
 }
 
 func buildHPAV2beta2(hpa *v2beta2.HorizontalPodAutoscaler) HPA {
-	targetCPUPercentage := int32(0)
+	var targetCPUPercentage int32 = 0
+	var targetMemoryPercentage int32 = 0
 	netrics := hpa.Spec.Metrics
 	for i := 0; i < len(netrics); i++ {
 		metric := netrics[i]
@@ -86,6 +87,8 @@ func buildHPAV2beta2(hpa *v2beta2.HorizontalPodAutoscaler) HPA {
 			target := res.Target
 			if res.Name == "cpu" && target.AverageUtilization != (*int32)(nil) {
 				targetCPUPercentage = *target.AverageUtilization
+			} else if res.Name == "memory" && target.AverageUtilization != (*int32)(nil) {
+				targetMemoryPercentage = *target.AverageUtilization
 			}
 		}
 	}
@@ -102,17 +105,19 @@ func buildHPAV2beta2(hpa *v2beta2.HorizontalPodAutoscaler) HPA {
 
 	tr := hpa.Spec.ScaleTargetRef
 	return HPA{
-		Namespace:           namespace,
-		Name:                hpa.GetName(),
-		TargetRef:           TargetRef{APIVersion: tr.APIVersion, Kind: tr.Kind, Name: tr.Name},
-		MinReplicas:         minReplicas,
-		MaxReplicas:         hpa.Spec.MaxReplicas,
-		TargetCPUPercentage: targetCPUPercentage,
+		Namespace:              namespace,
+		Name:                   hpa.GetName(),
+		TargetRef:              TargetRef{APIVersion: tr.APIVersion, Kind: tr.Kind, Name: tr.Name},
+		MinReplicas:            minReplicas,
+		MaxReplicas:            hpa.Spec.MaxReplicas,
+		TargetCPUPercentage:    targetCPUPercentage,
+		TargetMemoryPercentage: targetMemoryPercentage,
 	}
 }
 
 func buildHPAV2beta1(hpa *v2beta1.HorizontalPodAutoscaler) HPA {
-	targetCPUPercentage := int32(0)
+	var targetCPUPercentage int32 = 0
+	var targetMemoryPercentage int32 = 0
 	netrics := hpa.Spec.Metrics
 	for i := 0; i < len(netrics); i++ {
 		metric := netrics[i]
@@ -120,6 +125,8 @@ func buildHPAV2beta1(hpa *v2beta1.HorizontalPodAutoscaler) HPA {
 			res := metric.Resource
 			if res.Name == "cpu" && res.TargetAverageUtilization != (*int32)(nil) {
 				targetCPUPercentage = *res.TargetAverageUtilization
+			} else if res.Name == "memory" && res.TargetAverageUtilization != (*int32)(nil) {
+				targetMemoryPercentage = *res.TargetAverageUtilization
 			}
 		}
 	}
@@ -136,17 +143,19 @@ func buildHPAV2beta1(hpa *v2beta1.HorizontalPodAutoscaler) HPA {
 
 	tr := hpa.Spec.ScaleTargetRef
 	return HPA{
-		Namespace:           namespace,
-		Name:                hpa.GetName(),
-		TargetRef:           TargetRef{APIVersion: tr.APIVersion, Kind: tr.Kind, Name: tr.Name},
-		MinReplicas:         minReplicas,
-		MaxReplicas:         hpa.Spec.MaxReplicas,
-		TargetCPUPercentage: targetCPUPercentage,
+		Namespace:              namespace,
+		Name:                   hpa.GetName(),
+		TargetRef:              TargetRef{APIVersion: tr.APIVersion, Kind: tr.Kind, Name: tr.Name},
+		MinReplicas:            minReplicas,
+		MaxReplicas:            hpa.Spec.MaxReplicas,
+		TargetCPUPercentage:    targetCPUPercentage,
+		TargetMemoryPercentage: targetMemoryPercentage,
 	}
 }
 
 func buildHPAV1(hpa *v1.HorizontalPodAutoscaler) HPA {
 	var targetCPUPercentage int32 = 0
+	var targetMemoryPercentage int32 = 0
 	if hpa.Spec.TargetCPUUtilizationPercentage != (*int32)(nil) {
 		targetCPUPercentage = *hpa.Spec.TargetCPUUtilizationPercentage
 	}
@@ -163,11 +172,12 @@ func buildHPAV1(hpa *v1.HorizontalPodAutoscaler) HPA {
 
 	tr := hpa.Spec.ScaleTargetRef
 	return HPA{
-		Namespace:           namespace,
-		Name:                hpa.GetName(),
-		TargetRef:           TargetRef{APIVersion: tr.APIVersion, Kind: tr.Kind, Name: tr.Name},
-		MinReplicas:         minReplicas,
-		MaxReplicas:         hpa.Spec.MaxReplicas,
-		TargetCPUPercentage: targetCPUPercentage,
+		Namespace:              namespace,
+		Name:                   hpa.GetName(),
+		TargetRef:              TargetRef{APIVersion: tr.APIVersion, Kind: tr.Kind, Name: tr.Name},
+		MinReplicas:            minReplicas,
+		MaxReplicas:            hpa.Spec.MaxReplicas,
+		TargetCPUPercentage:    targetCPUPercentage,
+		TargetMemoryPercentage: targetMemoryPercentage,
 	}
 }
