@@ -43,7 +43,7 @@ func TestBuildHPACPUTargetUtilization(t *testing.T) {
 		t.Errorf("Expected label %+v, got %+v", expected, got)
 	}
 
-	expected = hpaCPUTargetUtilizationMetricType
+	expected = hpaCPUMetricType
 	if got := ts.Metric.Type; got != expected {
 		t.Errorf("Expected Metric %+v, got %+v", expected, got)
 	}
@@ -73,11 +73,63 @@ func TestBuildHPACPUTargetUtilization(t *testing.T) {
 	}
 }
 
-func TestBuildHPACPUTargetUtilizationTimeSeriess(t *testing.T) {
+func TestBuildHPAMemoryTargetUtilization(t *testing.T) {
+	hpa := k8s.HPA{
+		Namespace: "default",
+		Name:      "currencyservice-hpa",
+		TargetRef: k8s.TargetRef{
+			APIVersion: "v1",
+			Kind:       "Deployment",
+			Name:       "currencyservice",
+		},
+		MinReplicas:            1,
+		MaxReplicas:            10,
+		TargetMemoryPercentage: 60,
+	}
+
+	now := time.Now().Format(time.RFC3339)
+	ts := buildHPAMemoryTargetUtilization(hpa, now)
+
+	expected := "currencyservice"
+	if got := ts.Resource.Labels["pod_name"]; got != expected {
+		t.Errorf("Expected label %+v, got %+v", expected, got)
+	}
+
+	expected = hpaMemoryMetricType
+	if got := ts.Metric.Type; got != expected {
+		t.Errorf("Expected Metric %+v, got %+v", expected, got)
+	}
+
+	metricLabels := map[string]string{
+		"targetef_apiversion": hpa.TargetRef.APIVersion,
+		"targetref_kind":      hpa.TargetRef.Kind,
+		"targetref_name":      hpa.TargetRef.Name,
+		"minReplicas":         strconv.Itoa(int(hpa.MinReplicas)),
+		"maxReplicas":         strconv.Itoa(int(hpa.MaxReplicas)),
+		"object_name":         hpa.Name,
+	}
+	for key, expected := range metricLabels {
+		if got := ts.Metric.Labels[key]; got != expected {
+			t.Errorf("Expected Label %+v, got %+v", expected, got)
+		}
+	}
+
+	expected = now
+	if got := ts.Points[0].Interval.EndTime; got != expected {
+		t.Errorf("Expected EndTime %+v, got %+v", expected, got)
+	}
+
+	expectedf := int64(60)
+	if got := ts.Points[0].Value.Int64Value; *got != expectedf {
+		t.Errorf("Expected Value %+v, got %+v", expectedf, *got)
+	}
+}
+
+func TestBuildHPACPUTargetUtilizationTimeSeries(t *testing.T) {
 	hpas := []k8s.HPA{
 		{
 			Namespace: "default",
-			Name:      "currencyservice-hpa-1",
+			Name:      "currencyservice-cpu-hpa",
 			TargetRef: k8s.TargetRef{
 				APIVersion: "v1",
 				Kind:       "Deployment",
@@ -89,7 +141,7 @@ func TestBuildHPACPUTargetUtilizationTimeSeriess(t *testing.T) {
 		},
 		{
 			Namespace: "default",
-			Name:      "currencyservice-hpa-2",
+			Name:      "currencyservice-cpu-hpa2",
 			TargetRef: k8s.TargetRef{
 				APIVersion: "v1",
 				Kind:       "Deployment",
@@ -101,7 +153,7 @@ func TestBuildHPACPUTargetUtilizationTimeSeriess(t *testing.T) {
 		},
 		{
 			Namespace: "default",
-			Name:      "currencyservice-hpa-other",
+			Name:      "currencyservice-hpa-wrong",
 			TargetRef: k8s.TargetRef{
 				APIVersion: "v1",
 				Kind:       "Deployment",
@@ -111,23 +163,44 @@ func TestBuildHPACPUTargetUtilizationTimeSeriess(t *testing.T) {
 			MaxReplicas:         10,
 			TargetCPUPercentage: 0,
 		},
+		{
+			Namespace: "default",
+			Name:      "currencyservice-memory-hpa",
+			TargetRef: k8s.TargetRef{
+				APIVersion: "v1",
+				Kind:       "Deployment",
+				Name:       "currencyservice3",
+			},
+			MinReplicas:            1,
+			MaxReplicas:            10,
+			TargetMemoryPercentage: 60,
+		},
 	}
 
 	now := time.Now().Format(time.RFC3339)
-	tsList := BuildHPACPUTargetUtilizationTimeSeries(hpas, now)
+	tsList := BuildHPATargetUtilizationTimeSeries(hpas, now)
 
-	expectedI := 1
+	expectedI := 2
 	if got := len(tsList); got != expectedI {
 		t.Errorf("Expected # %+v, got %+v", expectedI, got)
 	}
 
 	ts := tsList[0]
-	expected := hpaCPUTargetUtilizationMetricType
+	expected := hpaCPUMetricType
 	if got := ts.Metric.Type; got != expected {
 		t.Errorf("Expected Metric %+v, got %+v", expected, got)
 	}
+	expected = "currencyservice-cpu-hpa"
+	if got := ts.Metric.Labels["object_name"]; got != expected {
+		t.Errorf("Expected Label %+v, got %+v", expected, got)
+	}
 
-	expected = "currencyservice-hpa-1"
+	ts = tsList[1]
+	expected = hpaMemoryMetricType
+	if got := ts.Metric.Type; got != expected {
+		t.Errorf("Expected Metric %+v, got %+v", expected, got)
+	}
+	expected = "currencyservice-memory-hpa"
 	if got := ts.Metric.Labels["object_name"]; got != expected {
 		t.Errorf("Expected Label %+v, got %+v", expected, got)
 	}

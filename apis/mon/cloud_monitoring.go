@@ -69,9 +69,8 @@ func exportChunk(service *monitoring.Service, tsChunk []*monitoring.TimeSeries, 
 			duration := time.Duration(retrialBackOff*retries) * time.Millisecond
 			time.Sleep(duration)
 			return exportChunk(service, tsChunk, retries+1)
-		} else {
-			return err
 		}
+		return err
 	}
 	return nil
 }

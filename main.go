@@ -57,7 +57,7 @@ func main() {
 	tsList := mon.BuildVPARecommendationTimeSeries(vpas, now)
 
 	hpas := retrieveHPAs()
-	tsList = append(tsList, mon.BuildHPACPUTargetUtilizationTimeSeries(hpas, now)...)
+	tsList = append(tsList, mon.BuildHPATargetUtilizationTimeSeries(hpas, now)...)
 
 	err := mon.ExportMetrics(tsList)
 	exitOnError("Failed to instantiate cloud monitoring object", err)

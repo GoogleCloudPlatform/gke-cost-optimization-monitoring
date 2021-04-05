@@ -52,7 +52,7 @@ func TestBuildVPACPURecomendation(t *testing.T) {
 			t.Errorf("Expected label %+v, got %+v", expected, got)
 		}
 
-		expected = vpaCpuMetricType
+		expected = vpaCPUMetricType
 		if got := ts.Metric.Type; got != expected {
 			t.Errorf("Expected Metric %+v, got %+v", expected, got)
 		}
@@ -170,7 +170,7 @@ func TestBuildVPARecomendations(t *testing.T) {
 		t.Errorf("Expected # %+v, got %+v", expected, got)
 	}
 
-	metrics := []string{vpaCpuMetricType, vpaMemoryMetricType}
+	metrics := []string{vpaCPUMetricType, vpaMemoryMetricType}
 	for i, ts := range tsList {
 		expected := metrics[i%2]
 		if got := ts.Metric.Type; got != expected {
@@ -245,7 +245,7 @@ func TestBuildVPARecommendationTimeSeries(t *testing.T) {
 		t.Errorf("Expected # %+v, got %+v", expected, got)
 	}
 
-	metrics := []string{vpaCpuMetricType, vpaMemoryMetricType}
+	metrics := []string{vpaCPUMetricType, vpaMemoryMetricType}
 	for i, ts := range tsList {
 		expected := metrics[i%2]
 		if got := ts.Metric.Type; got != expected {

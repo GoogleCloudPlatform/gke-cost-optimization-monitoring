@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	vpaCpuMetricType    = "custom.googleapis.com/podautoscaler/vpa/cpu/target_recommendation"
+	vpaCPUMetricType    = "custom.googleapis.com/podautoscaler/vpa/cpu/target_recommendation"
 	vpaMemoryMetricType = "custom.googleapis.com/podautoscaler/vpa/memory/target_recommendation"
 )
 
@@ -74,7 +74,7 @@ func buildVPACPURecomendation(vpa k8s.VPA, rec k8s.VPARecomendation, resourceLab
 			Labels: resourceLabels,
 		},
 		Metric: &monitoring.Metric{
-			Type: vpaCpuMetricType,
+			Type: vpaCPUMetricType,
 			Labels: map[string]string{
 				"targetef_apiversion": vpa.TargetRef.APIVersion,
 				"targetref_kind":      vpa.TargetRef.Kind,

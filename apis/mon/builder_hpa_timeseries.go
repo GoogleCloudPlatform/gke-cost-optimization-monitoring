@@ -26,40 +26,65 @@ import (
 )
 
 const (
-	hpaCPUTargetUtilizationMetricType = "custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization"
+	hpaCPUMetricType    = "custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization"
+	hpaMemoryMetricType = "custom.googleapis.com/podautoscaler/hpa/memory/target_utilization"
 )
 
-// BuildHPACPUTargetUtilizationTimeSeriess buid Timeseries objects for HPA target CPU
-func BuildHPACPUTargetUtilizationTimeSeries(hpas []k8s.HPA, now string) []*monitoring.TimeSeries {
+// BuildHPATargetUtilizationTimeSeries buid Timeseries objects for HPA target CPU
+func BuildHPATargetUtilizationTimeSeries(hpas []k8s.HPA, now string) []*monitoring.TimeSeries {
 	var hpaMap map[string]k8s.HPA = make(map[string]k8s.HPA)
 	tsList := []*monitoring.TimeSeries{}
 	for _, hpa := range hpas {
-		if hpa.TargetCPUPercentage > 0 {
-			targetKey := fmt.Sprintf("%s|%s|%s", hpa.TargetRef.Kind, hpa.Namespace, hpa.TargetRef.Name)
-			if _, found := hpaMap[targetKey]; !found {
-				hpaMap[targetKey] = hpa
-				tsList = append(tsList, buildHPACPUTargetUtilization(hpa, now))
-			} else {
-				// Skip HPA object once we alreay had one in the list with the same target object
-				log.Infof("Skipping HPA '%s.%s' once '%s.%s' was already loaded",
-					hpa.Namespace, hpa.Name, hpaMap[targetKey].Namespace, hpaMap[targetKey].Name)
+		if hpa.TargetCPUPercentage > 0 || hpa.TargetMemoryPercentage > 0 {
+			if hpa.TargetCPUPercentage > 0 {
+				targetKey := fmt.Sprintf("%s|%s|%s|cpu", hpa.TargetRef.Kind, hpa.Namespace, hpa.TargetRef.Name)
+				if _, found := hpaMap[targetKey]; !found {
+					hpaMap[targetKey] = hpa
+					tsList = append(tsList, buildHPACPUTargetUtilization(hpa, now))
+				} else {
+					// Skip HPA object once we alreay had one in the list with the same target object
+					log.Infof("Skipping HPA cpu '%s.%s' once '%s.%s' was already loaded",
+						hpa.Namespace, hpa.Name, hpaMap[targetKey].Namespace, hpaMap[targetKey].Name)
+				}
+			}
+			if hpa.TargetMemoryPercentage > 0 {
+				targetKey := fmt.Sprintf("%s|%s|%s|memory", hpa.TargetRef.Kind, hpa.Namespace, hpa.TargetRef.Name)
+				if _, found := hpaMap[targetKey]; !found {
+					hpaMap[targetKey] = hpa
+					tsList = append(tsList, buildHPAMemoryTargetUtilization(hpa, now))
+				} else {
+					// Skip HPA object once we alreay had one in the list with the same target object
+					log.Infof("Skipping HPA memory '%s.%s' once '%s.%s' was already loaded",
+						hpa.Namespace, hpa.Name, hpaMap[targetKey].Namespace, hpaMap[targetKey].Name)
+				}
 			}
 		} else {
-			log.Infof("Skipping HPA '%s.%s' once it does not configure Target CPU", hpa.Namespace, hpa.Name)
+			log.Infof("Skipping HPA '%s.%s' once it doesn't configure either Target CPU or Target Memory", hpa.Namespace, hpa.Name)
 		}
 	}
 	return tsList
 }
 
 func buildHPACPUTargetUtilization(hpa k8s.HPA, now string) *monitoring.TimeSeries {
-	cpuTarget := int64(hpa.TargetCPUPercentage)
+	metric := hpaCPUMetricType
+	value := int64(hpa.TargetCPUPercentage)
+	return buildHPATargetUtilization(metric, value, hpa, now)
+}
+
+func buildHPAMemoryTargetUtilization(hpa k8s.HPA, now string) *monitoring.TimeSeries {
+	metric := hpaMemoryMetricType
+	value := int64(hpa.TargetMemoryPercentage)
+	return buildHPATargetUtilization(metric, value, hpa, now)
+}
+
+func buildHPATargetUtilization(metric string, value int64, hpa k8s.HPA, now string) *monitoring.TimeSeries {
 	return &monitoring.TimeSeries{
 		Resource: &monitoring.MonitoredResource{
 			Type:   "k8s_pod",
 			Labels: buildHPAResourceLabels(hpa),
 		},
 		Metric: &monitoring.Metric{
-			Type: hpaCPUTargetUtilizationMetricType,
+			Type: metric,
 			Labels: map[string]string{
 				"targetef_apiversion": hpa.TargetRef.APIVersion,
 				"targetref_kind":      hpa.TargetRef.Kind,
@@ -74,10 +99,9 @@ func buildHPACPUTargetUtilization(hpa k8s.HPA, now string) *monitoring.TimeSerie
 				EndTime: now,
 			},
 			Value: &monitoring.TypedValue{
-				Int64Value: &cpuTarget,
+				Int64Value: &value,
 			},
 		}},
-		Unit: "{cpu}", // TODO: understand why it is not being used
 	}
 }
 
