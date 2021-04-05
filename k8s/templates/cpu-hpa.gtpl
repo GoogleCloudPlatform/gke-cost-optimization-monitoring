@@ -21,7 +21,7 @@
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{$d.metadata.name}}-hpa
+  name: {{$d.metadata.name}}-cpu-hpa
   namespace:  {{$d.metadata.namespace}}
 spec:
   scaleTargetRef:

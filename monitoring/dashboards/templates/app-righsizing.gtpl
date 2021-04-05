@@ -619,7 +619,7 @@ mosaicLayout:
                   | group_by 1m,
                       [value_vpa_recommendation_mean: mean(value.target_recommendation)]
                   | every 1m
-                  | group_by [metric: 'recommended_bytes'],
+                  | group_by [metric: 'vpa_recommended_bytes'],
                       [avg_value: cast_double(sum(value_vpa_recommendation_mean))] }
               | union
         timeshiftDuration: 0s
