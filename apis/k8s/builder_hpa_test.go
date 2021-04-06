@@ -16,6 +16,7 @@ package k8s
 
 import (
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"testing"
 )
@@ -544,5 +545,60 @@ spec:
 	hpa, _ := decodeHPA([]byte(yaml))
 	if hpa.TargetCPUPercentage != 0 {
 		t.Error("Target CPU should be zero")
+	}
+}
+
+func TestHPADecodeListV2Beta2(t *testing.T) {
+	data, err := ioutil.ReadFile("./testdata/hpa-v2beta2.yaml")
+	if err != nil {
+		t.Errorf("Error reading file: %+v", err)
+	}
+
+	hpas, err := DecodeHPAListV2Beta2(data)
+	if err != nil {
+		t.Errorf("Error decoding file: %+v", err)
+	}
+	for _, hpa := range hpas {
+		if hpa.TargetCPUPercentage == 0 && hpa.TargetMemoryPercentage == 0 {
+			t.Errorf("HPA should have resource cpu or memory utilization: %+v", hpa)
+		}
+	}
+}
+
+func TestHPADecodeListV2Beta1(t *testing.T) {
+	data, err := ioutil.ReadFile("./testdata/hpa-v2beta1.yaml")
+	if err != nil {
+		t.Errorf("Error reading file: %+v", err)
+	}
+
+	hpas, err := DecodeHPAListV2Beta1(data)
+	if err != nil {
+		t.Errorf("Error decoding file: %+v", err)
+	}
+	for _, hpa := range hpas {
+		if hpa.TargetCPUPercentage == 0 && hpa.TargetMemoryPercentage == 0 {
+			t.Errorf("HPA should have resource cpu or memory utilization: %+v", hpa)
+		}
+	}
+}
+
+func TestHPADecodeListV1(t *testing.T) {
+	data, err := ioutil.ReadFile("./testdata/hpa-v1.yaml")
+	if err != nil {
+		t.Errorf("Error reading file: %+v", err)
+	}
+
+	hpas, err := DecodeHPAListV1(data)
+	if err != nil {
+		t.Errorf("Error decoding file: %+v", err)
+	}
+	noUtilizationDefined := 0
+	for _, hpa := range hpas {
+		if hpa.TargetCPUPercentage == 0 && hpa.TargetMemoryPercentage == 0 {
+			noUtilizationDefined++
+		}
+	}
+	if noUtilizationDefined != 1 {
+		t.Errorf("HPA should have resource cpu or memory utilization for all but one")
 	}
 }

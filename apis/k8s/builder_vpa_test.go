@@ -16,6 +16,7 @@ package k8s
 
 import (
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"testing"
 )
@@ -542,5 +543,27 @@ func TestVPAListWithUnsuportedVersion(t *testing.T) {
 
 	if len(vpaList) != 1 {
 		t.Error("VPA List has only one supported objects")
+	}
+}
+
+func TestVPADecodeListV1(t *testing.T) {
+	data, err := ioutil.ReadFile("./testdata/vpa-v1.yaml")
+	if err != nil {
+		t.Errorf("Error reading file: %+v", err)
+	}
+
+	vpas, err := DecodeVPAList(data)
+	if err != nil {
+		t.Errorf("Error decoding file: %+v", err)
+	}
+	noRecommendations := 0
+	for _, vpa := range vpas {
+		if len(vpa.Recomendations) == 0 ||
+			vpa.Recomendations[0].Target.CPU <= 0 && vpa.Recomendations[0].Target.Memory <= 0 {
+			noRecommendations++
+		}
+	}
+	if noRecommendations != 8 {
+		t.Errorf("VPA should have target recomendations for all but 8")
 	}
 }

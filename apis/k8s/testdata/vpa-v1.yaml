@@ -1,0 +1,1260 @@
+apiVersion: v1
+items:
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"adservice-vpa","namespace":"default"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"adservice"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:32Z"
+    generation: 1016
+    name: adservice-vpa
+    namespace: default
+    resourceVersion: "528634"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/default/verticalpodautoscalers/adservice-vpa
+    uid: 89ceaa6b-abb4-4ab0-91d9-1c779ea58899
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: adservice
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-06T12:37:09Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-06T12:28:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: server
+        lowerBound:
+          cpu: 40m
+          memory: "181403648"
+        target:
+          cpu: 55m
+          memory: "186646528"
+        uncappedTarget:
+          cpu: 55m
+          memory: "186646528"
+        upperBound:
+          cpu: 850m
+          memory: "2767192064"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"cartservice-vpa","namespace":"default"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"cartservice"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:32Z"
+    generation: 439
+    name: cartservice-vpa
+    namespace: default
+    resourceVersion: "521536"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/default/verticalpodautoscalers/cartservice-vpa
+    uid: 052c799b-aa07-420b-8a06-5b1fe771b9f6
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: cartservice
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T20:00:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: server
+        lowerBound:
+          cpu: 15m
+          memory: "39845888"
+        target:
+          cpu: 20m
+          memory: "42991616"
+        uncappedTarget:
+          cpu: 20m
+          memory: "42991616"
+        upperBound:
+          cpu: 50m
+          memory: "98566144"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"checkoutservice-vpa","namespace":"default"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"checkoutservice"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:32Z"
+    generation: 283
+    name: checkoutservice-vpa
+    namespace: default
+    resourceVersion: "514854"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/default/verticalpodautoscalers/checkoutservice-vpa
+    uid: 8d0107c0-4c49-4c78-8faa-f9beb60602c9
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: checkoutservice
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:59:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: server
+        lowerBound:
+          cpu: 7m
+          memory: "11534336"
+        target:
+          cpu: 20m
+          memory: "13631488"
+        uncappedTarget:
+          cpu: 20m
+          memory: "13631488"
+        upperBound:
+          cpu: 50m
+          memory: "31457280"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"currencyservice-vpa","namespace":"default"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"currencyservice"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:32Z"
+    generation: 851
+    name: currencyservice-vpa
+    namespace: default
+    resourceVersion: "527697"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/default/verticalpodautoscalers/currencyservice-vpa
+    uid: da5fae56-d0c5-45dd-95d7-e5d1f92187c9
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: currencyservice
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:59:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: server
+        lowerBound:
+          cpu: 15m
+          memory: 262144k
+        target:
+          cpu: 30m
+          memory: 262144k
+        uncappedTarget:
+          cpu: 30m
+          memory: 262144k
+        upperBound:
+          cpu: 75m
+          memory: "607125504"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"emailservice-vpa","namespace":"default"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"emailservice"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:33Z"
+    generation: 471
+    name: emailservice-vpa
+    namespace: default
+    resourceVersion: "523413"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/default/verticalpodautoscalers/emailservice-vpa
+    uid: 149f64f2-e898-4596-b285-d1d99cb3d215
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: emailservice
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:59:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: server
+        lowerBound:
+          cpu: 9m
+          memory: "48234496"
+        target:
+          cpu: 20m
+          memory: "50331648"
+        uncappedTarget:
+          cpu: 20m
+          memory: "50331648"
+        upperBound:
+          cpu: 40m
+          memory: "116391936"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"frontend-vpa","namespace":"default"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"frontend"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:33Z"
+    generation: 311
+    name: frontend-vpa
+    namespace: default
+    resourceVersion: "515376"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/default/verticalpodautoscalers/frontend-vpa
+    uid: 0fc307d2-0c99-4415-aeff-3a97b7b29268
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: frontend
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:59:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: server
+        lowerBound:
+          cpu: 25m
+          memory: "13631488"
+        target:
+          cpu: 45m
+          memory: "15728640"
+        uncappedTarget:
+          cpu: 45m
+          memory: "15728640"
+        upperBound:
+          cpu: 115m
+          memory: "34603008"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"loadgenerator-vpa","namespace":"default"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"loadgenerator"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:33Z"
+    generation: 471
+    name: loadgenerator-vpa
+    namespace: default
+    resourceVersion: "522478"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/default/verticalpodautoscalers/loadgenerator-vpa
+    uid: 633947cc-f0ad-41ee-bfaa-0c71f598dada
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: loadgenerator
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T20:00:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: main
+        lowerBound:
+          cpu: 15m
+          memory: "44040192"
+        target:
+          cpu: 25m
+          memory: "60817408"
+        uncappedTarget:
+          cpu: 25m
+          memory: "60817408"
+        upperBound:
+          cpu: 55m
+          memory: "139460608"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"paymentservice-vpa","namespace":"default"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"paymentservice"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:33Z"
+    generation: 534
+    name: paymentservice-vpa
+    namespace: default
+    resourceVersion: "523880"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/default/verticalpodautoscalers/paymentservice-vpa
+    uid: 90f570aa-55c7-4039-8486-c9e1d61df868
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: paymentservice
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T20:00:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: server
+        lowerBound:
+          cpu: 6m
+          memory: "77594624"
+        target:
+          cpu: 10m
+          memory: "81788928"
+        uncappedTarget:
+          cpu: 10m
+          memory: "81788928"
+        upperBound:
+          cpu: 25m
+          memory: "187695104"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"productcatalogservice-vpa","namespace":"default"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"productcatalogservice"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:33Z"
+    generation: 290
+    name: productcatalogservice-vpa
+    namespace: default
+    resourceVersion: "528636"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/default/verticalpodautoscalers/productcatalogservice-vpa
+    uid: c4dbcd52-e3be-4aae-87a0-94461a5f18cd
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: productcatalogservice
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T20:00:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: server
+        lowerBound:
+          cpu: 15m
+          memory: "12582912"
+        target:
+          cpu: 35m
+          memory: "13631488"
+        uncappedTarget:
+          cpu: 35m
+          memory: "13631488"
+        upperBound:
+          cpu: 75m
+          memory: "30408704"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"recommendationservice-vpa","namespace":"default"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"recommendationservice"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:33Z"
+    generation: 799
+    name: recommendationservice-vpa
+    namespace: default
+    resourceVersion: "528629"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/default/verticalpodautoscalers/recommendationservice-vpa
+    uid: 37db6e0c-2a8a-4467-a924-f44b67dce03a
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: recommendationservice
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T20:00:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: server
+        lowerBound:
+          cpu: 25m
+          memory: "78643200"
+        target:
+          cpu: 35m
+          memory: "660602880"
+        uncappedTarget:
+          cpu: 35m
+          memory: "660602880"
+        upperBound:
+          cpu: 80m
+          memory: "1527775232"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"redis-cart-vpa","namespace":"default"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"redis-cart"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:33Z"
+    generation: 151
+    name: redis-cart-vpa
+    namespace: default
+    resourceVersion: "485422"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/default/verticalpodautoscalers/redis-cart-vpa
+    uid: 11ea66a8-292e-4354-99c6-52669524543d
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: redis-cart
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T20:00:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: redis
+        lowerBound:
+          cpu: 3m
+          memory: "3145728"
+        target:
+          cpu: 6m
+          memory: "4194304"
+        uncappedTarget:
+          cpu: 6m
+          memory: "4194304"
+        upperBound:
+          cpu: 15m
+          memory: "8388608"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"shippingservice-vpa","namespace":"default"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"shippingservice"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:33Z"
+    generation: 262
+    name: shippingservice-vpa
+    namespace: default
+    resourceVersion: "525366"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/default/verticalpodautoscalers/shippingservice-vpa
+    uid: a8497c25-d5f9-42f7-b69f-c7bcc8ed01c6
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: shippingservice
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T20:00:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: server
+        lowerBound:
+          cpu: 5m
+          memory: "11534336"
+        target:
+          cpu: 10m
+          memory: "13631488"
+        uncappedTarget:
+          cpu: 10m
+          memory: "13631488"
+        upperBound:
+          cpu: 25m
+          memory: "29360128"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"event-exporter-gke-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"event-exporter-gke"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:30Z"
+    generation: 623
+    name: event-exporter-gke-vpa
+    namespace: kube-system
+    resourceVersion: "527700"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/event-exporter-gke-vpa
+    uid: 2cda3f94-f375-4a3c-9786-1b9a27dc0f2a
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: event-exporter-gke
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T20:04:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: event-exporter
+        lowerBound:
+          cpu: 2m
+          memory: "12582912"
+        target:
+          cpu: 4m
+          memory: "12582912"
+        uncappedTarget:
+          cpu: 4m
+          memory: "12582912"
+        upperBound:
+          cpu: 10m
+          memory: "29360128"
+      - containerName: prometheus-to-sd-exporter
+        lowerBound:
+          cpu: 3m
+          memory: "8388608"
+        target:
+          cpu: 5m
+          memory: "8388608"
+        uncappedTarget:
+          cpu: 5m
+          memory: "8388608"
+        upperBound:
+          cpu: 15m
+          memory: "18874368"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"fluentbit-gke-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"DaemonSet","name":"fluentbit-gke"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:31Z"
+    generation: 705
+    name: fluentbit-gke-vpa
+    namespace: kube-system
+    resourceVersion: "528630"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/fluentbit-gke-vpa
+    uid: fe02ff0b-1697-4ec0-b758-3f2fdb68952f
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: DaemonSet
+      name: fluentbit-gke
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:58:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: fluentbit
+        lowerBound:
+          cpu: 8m
+          memory: "14680064"
+        target:
+          cpu: 20m
+          memory: "16777216"
+        uncappedTarget:
+          cpu: 20m
+          memory: "16777216"
+        upperBound:
+          cpu: 50m
+          memory: "38797312"
+      - containerName: fluentbit-gke
+        lowerBound:
+          cpu: 5m
+          memory: "15728640"
+        target:
+          cpu: 10m
+          memory: "16777216"
+        uncappedTarget:
+          cpu: 10m
+          memory: "16777216"
+        upperBound:
+          cpu: 30m
+          memory: "38797312"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"gke-metadata-server-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"DaemonSet","name":"gke-metadata-server"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:31Z"
+    generation: 2
+    name: gke-metadata-server-vpa
+    namespace: kube-system
+    resourceVersion: "3038"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/gke-metadata-server-vpa
+    uid: 40193b73-43e0-4576-83f0-632639fe015f
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: DaemonSet
+      name: gke-metadata-server
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:56:07Z"
+      message: 'Cannot read targetRef. Reason: DaemonSet kube-system/gke-metadata-server
+        does not exist'
+      status: "True"
+      type: ConfigUnsupported
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      message: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      reason: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      status: "False"
+      type: RecommendationProvided
+    recommendation: {}
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"gke-metrics-agent-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"DaemonSet","name":"gke-metrics-agent"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:31Z"
+    generation: 370
+    name: gke-metrics-agent-vpa
+    namespace: kube-system
+    resourceVersion: "515844"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/gke-metrics-agent-vpa
+    uid: 0629f772-ba1c-4179-a83c-53492be46735
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: DaemonSet
+      name: gke-metrics-agent
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:58:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: gke-metrics-agent
+        lowerBound:
+          cpu: 6m
+          memory: "27262976"
+        target:
+          cpu: 10m
+          memory: "29360128"
+        uncappedTarget:
+          cpu: 10m
+          memory: "29360128"
+        upperBound:
+          cpu: 25m
+          memory: "67108864"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"gke-metrics-agent-windows-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"DaemonSet","name":"gke-metrics-agent-windows"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:31Z"
+    generation: 2
+    name: gke-metrics-agent-windows-vpa
+    namespace: kube-system
+    resourceVersion: "3058"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/gke-metrics-agent-windows-vpa
+    uid: 1a68e407-d4eb-4900-a459-686808ce7033
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: DaemonSet
+      name: gke-metrics-agent-windows
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      message: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      reason: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      status: "False"
+      type: RecommendationProvided
+    recommendation: {}
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"kube-dns-autoscaler-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"kube-dns-autoscaler"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:30Z"
+    generation: 179
+    name: kube-dns-autoscaler-vpa
+    namespace: kube-system
+    resourceVersion: "515377"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/kube-dns-autoscaler-vpa
+    uid: dbe4e7a0-240d-4e31-bba5-540deaf2c5ed
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: kube-dns-autoscaler
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T20:04:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: autoscaler
+        lowerBound:
+          cpu: 1m
+          memory: "6291456"
+        target:
+          cpu: 1m
+          memory: "6291456"
+        uncappedTarget:
+          cpu: 1m
+          memory: "6291456"
+        upperBound:
+          cpu: 2m
+          memory: "13631488"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"kube-dns-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"kube-dns"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:30Z"
+    generation: 894
+    name: kube-dns-vpa
+    namespace: kube-system
+    resourceVersion: "528628"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/kube-dns-vpa
+    uid: a22ac463-ee1e-4e07-bc28-2702b0f8a490
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: kube-dns
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:59:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: dnsmasq
+        lowerBound:
+          cpu: 1m
+          memory: "9437184"
+        target:
+          cpu: 2m
+          memory: "9437184"
+        uncappedTarget:
+          cpu: 2m
+          memory: "9437184"
+        upperBound:
+          cpu: 5m
+          memory: "20971520"
+      - containerName: kubedns
+        lowerBound:
+          cpu: 2m
+          memory: "11534336"
+        target:
+          cpu: 3m
+          memory: "12582912"
+        uncappedTarget:
+          cpu: 3m
+          memory: "12582912"
+        upperBound:
+          cpu: 7m
+          memory: "27262976"
+      - containerName: prometheus-to-sd
+        lowerBound:
+          cpu: 3m
+          memory: "9437184"
+        target:
+          cpu: 6m
+          memory: "10485760"
+        uncappedTarget:
+          cpu: 6m
+          memory: "10485760"
+        upperBound:
+          cpu: 15m
+          memory: "22020096"
+      - containerName: sidecar
+        lowerBound:
+          cpu: 1m
+          memory: "14680064"
+        target:
+          cpu: 2m
+          memory: "14680064"
+        uncappedTarget:
+          cpu: 2m
+          memory: "14680064"
+        upperBound:
+          cpu: 5m
+          memory: "33554432"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"kube-proxy-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"DaemonSet","name":"kube-proxy"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:31Z"
+    generation: 2
+    name: kube-proxy-vpa
+    namespace: kube-system
+    resourceVersion: "3027"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/kube-proxy-vpa
+    uid: 476f2388-aab7-46f6-9c99-80a96b680ebb
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: DaemonSet
+      name: kube-proxy
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      message: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      reason: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      status: "False"
+      type: RecommendationProvided
+    recommendation: {}
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"l7-default-backend-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"l7-default-backend"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:30Z"
+    generation: 147
+    name: l7-default-backend-vpa
+    namespace: kube-system
+    resourceVersion: "509623"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/l7-default-backend-vpa
+    uid: 846fa87d-3c2c-4e0e-b6f1-9fcbad7ecf42
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: l7-default-backend
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T20:04:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: default-http-backend
+        lowerBound:
+          cpu: 1m
+          memory: "6291456"
+        target:
+          cpu: 1m
+          memory: "6291456"
+        uncappedTarget:
+          cpu: 1m
+          memory: "6291456"
+        upperBound:
+          cpu: 2m
+          memory: "14680064"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"mcs-core-dns-autoscaler-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"mcs-core-dns-autoscaler"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:30Z"
+    generation: 2
+    name: mcs-core-dns-autoscaler-vpa
+    namespace: kube-system
+    resourceVersion: "3031"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/mcs-core-dns-autoscaler-vpa
+    uid: a0c42056-9c2e-4432-bd13-625bcf848f89
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: mcs-core-dns-autoscaler
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:56:07Z"
+      message: 'Cannot read targetRef. Reason: Deployment kube-system/mcs-core-dns-autoscaler
+        does not exist'
+      status: "True"
+      type: ConfigUnsupported
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      message: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      reason: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      status: "False"
+      type: RecommendationProvided
+    recommendation: {}
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"mcs-core-dns-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"mcs-core-dns"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:30Z"
+    generation: 2
+    name: mcs-core-dns-vpa
+    namespace: kube-system
+    resourceVersion: "3030"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/mcs-core-dns-vpa
+    uid: 974edd18-3c31-4d3d-91f5-cc50e60e4f64
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: mcs-core-dns
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:56:07Z"
+      message: 'Cannot read targetRef. Reason: Deployment kube-system/mcs-core-dns
+        does not exist'
+      status: "True"
+      type: ConfigUnsupported
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      message: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      reason: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      status: "False"
+      type: RecommendationProvided
+    recommendation: {}
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"metadata-proxy-v0.1-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"DaemonSet","name":"metadata-proxy-v0.1"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:32Z"
+    generation: 2
+    name: metadata-proxy-v0.1-vpa
+    namespace: kube-system
+    resourceVersion: "3028"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/metadata-proxy-v0.1-vpa
+    uid: 12d69ad2-c619-4a6c-847e-8c221eb333ed
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: DaemonSet
+      name: metadata-proxy-v0.1
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      message: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      reason: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      status: "False"
+      type: RecommendationProvided
+    recommendation: {}
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"metrics-server-v0.3.6-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"metrics-server-v0.3.6"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:31Z"
+    generation: 689
+    name: metrics-server-v0.3.6-vpa
+    namespace: kube-system
+    resourceVersion: "526767"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/metrics-server-v0.3.6-vpa
+    uid: 5aa9f2cc-8e9c-4a46-8243-6963459ee9a2
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: metrics-server-v0.3.6
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T20:04:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: metrics-server
+        lowerBound:
+          cpu: 5m
+          memory: "34603008"
+        target:
+          cpu: 9m
+          memory: "34603008"
+        uncappedTarget:
+          cpu: 9m
+          memory: "34603008"
+        upperBound:
+          cpu: 25m
+          memory: "79691776"
+      - containerName: metrics-server-nanny
+        lowerBound:
+          cpu: 1m
+          memory: "15728640"
+        target:
+          cpu: 1m
+          memory: "15728640"
+        uncappedTarget:
+          cpu: 1m
+          memory: "15728640"
+        upperBound:
+          cpu: 2m
+          memory: "35651584"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"netd-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"DaemonSet","name":"netd"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:32Z"
+    generation: 2
+    name: netd-vpa
+    namespace: kube-system
+    resourceVersion: "3056"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/netd-vpa
+    uid: 635b12b5-720e-482b-b8a6-8ee4430e5bb3
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: DaemonSet
+      name: netd
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:56:07Z"
+      message: 'Cannot read targetRef. Reason: DaemonSet kube-system/netd does not
+        exist'
+      status: "True"
+      type: ConfigUnsupported
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      message: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      reason: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      status: "False"
+      type: RecommendationProvided
+    recommendation: {}
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"nvidia-gpu-device-plugin-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"DaemonSet","name":"nvidia-gpu-device-plugin"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:32Z"
+    generation: 2
+    name: nvidia-gpu-device-plugin-vpa
+    namespace: kube-system
+    resourceVersion: "3049"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/nvidia-gpu-device-plugin-vpa
+    uid: 376a99dd-b5fc-42f7-bc7d-020f564188b0
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: DaemonSet
+      name: nvidia-gpu-device-plugin
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      message: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      reason: 'No recommendation provided from the recommendation engine: No pods
+        found.'
+      status: "False"
+      type: RecommendationProvided
+    recommendation: {}
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"prometheus-to-sd-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"DaemonSet","name":"prometheus-to-sd"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:32Z"
+    generation: 256
+    name: prometheus-to-sd-vpa
+    namespace: kube-system
+    resourceVersion: "524889"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/prometheus-to-sd-vpa
+    uid: a6379aa6-5ea2-4173-b7a8-865e697a3659
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: DaemonSet
+      name: prometheus-to-sd
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-05T19:58:08Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-05T19:56:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: prometheus-to-sd
+        lowerBound:
+          cpu: 2m
+          memory: "10485760"
+        target:
+          cpu: 4m
+          memory: "12582912"
+        uncappedTarget:
+          cpu: 4m
+          memory: "12582912"
+        upperBound:
+          cpu: 10m
+          memory: "29360128"
+- apiVersion: autoscaling.k8s.io/v1
+  kind: VerticalPodAutoscaler
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"autoscaling.k8s.io/v1","kind":"VerticalPodAutoscaler","metadata":{"annotations":{},"name":"stackdriver-metadata-agent-cluster-level-vpa","namespace":"kube-system"},"spec":{"targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"stackdriver-metadata-agent-cluster-level"},"updatePolicy":{"updateMode":"Off"}}}
+    creationTimestamp: "2021-04-05T19:55:31Z"
+    generation: 979
+    name: stackdriver-metadata-agent-cluster-level-vpa
+    namespace: kube-system
+    resourceVersion: "528631"
+    selfLink: /apis/autoscaling.k8s.io/v1/namespaces/kube-system/verticalpodautoscalers/stackdriver-metadata-agent-cluster-level-vpa
+    uid: 8521fde5-27b7-4204-b7fa-e837d6d98d8a
+  spec:
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: stackdriver-metadata-agent-cluster-level
+    updatePolicy:
+      updateMode: "Off"
+  status:
+    conditions:
+    - lastTransitionTime: "2021-04-06T12:37:09Z"
+      status: "False"
+      type: LowConfidence
+    - lastTransitionTime: "2021-04-06T12:28:08Z"
+      status: "True"
+      type: RecommendationProvided
+    recommendation:
+      containerRecommendations:
+      - containerName: metadata-agent
+        lowerBound:
+          cpu: 7m
+          memory: "18874368"
+        target:
+          cpu: 10m
+          memory: "18874368"
+        uncappedTarget:
+          cpu: 10m
+          memory: "18874368"
+        upperBound:
+          cpu: 155m
+          memory: "278921216"
+      - containerName: metadata-agent-nanny
+        lowerBound:
+          cpu: 50m
+          memory: "19922944"
+        target:
+          cpu: 75m
+          memory: "19922944"
+        uncappedTarget:
+          cpu: 75m
+          memory: "19922944"
+        upperBound:
+          cpu: 1175m
+          memory: "289406976"
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""

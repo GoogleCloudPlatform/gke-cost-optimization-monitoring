@@ -57,9 +57,26 @@ func buildVPAScheme() *runtime.Scheme {
 	return scheme
 }
 
-func buildHPAScheme() *runtime.Scheme {
+func buildHPAListV1Scheme() *runtime.Scheme {
 	scheme := runtime.NewScheme()
 	scheme.AddKnownTypeWithName(gvkList, &hpaV1.HorizontalPodAutoscalerList{})
+	return scheme
+}
+
+func buildHPAListV2Beta1Scheme() *runtime.Scheme {
+	scheme := runtime.NewScheme()
+	scheme.AddKnownTypeWithName(gvkList, &hpaV2beta1.HorizontalPodAutoscalerList{})
+	return scheme
+}
+
+func buildHPAListV2Beta2Scheme() *runtime.Scheme {
+	scheme := runtime.NewScheme()
+	scheme.AddKnownTypeWithName(gvkList, &hpaV2beta2.HorizontalPodAutoscalerList{})
+	return scheme
+}
+
+func buildHPAScheme() *runtime.Scheme {
+	scheme := runtime.NewScheme()
 	scheme.AddKnownTypeWithName(gvkHPAV1, &hpaV1.HorizontalPodAutoscaler{})
 	scheme.AddKnownTypeWithName(gvkHPAV2beta1, &hpaV2beta1.HorizontalPodAutoscaler{})
 	scheme.AddKnownTypeWithName(gvkHPAV2beta2, &hpaV2beta2.HorizontalPodAutoscaler{})

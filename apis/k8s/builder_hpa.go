@@ -22,24 +22,74 @@ import (
 	"k8s.io/api/autoscaling/v2beta2"
 )
 
-//DecodeHPAList reads k8s HorizontalPodAutoScaler yaml and trasform to HPA object
+//DecodeHPAList just for backward compatibility. Use version specific ones
 func DecodeHPAList(data []byte) ([]HPA, error) {
-	scheme := buildHPAScheme()
-	obj, gvk, err := decode(scheme, data)
-	if err != nil {
-		return []HPA{}, fmt.Errorf("Error Decoding. Check if your GroupVersionKind is defined in api/k8s/decoder.go. Root cause %+v", err)
-	}
-	switch obj.(type) {
-	case *v1.HorizontalPodAutoscalerList:
-		return buildHPAList(obj), nil
-	default:
-		return []HPA{}, fmt.Errorf("APIVersion and Kind not Supported: %+v", gvk)
-	}
+	return DecodeHPAListV1(data)
 }
 
-func buildHPAList(obj interface{}) []HPA {
+//DecodeHPAListV1 reads k8s HorizontalPodAutoScaler yaml and trasform to HPA v1 object
+func DecodeHPAListV1(data []byte) ([]HPA, error) {
+	scheme := buildHPAListV1Scheme()
+	obj, _, err := decode(scheme, data)
+	if err != nil {
+		return []HPA{}, fmt.Errorf("Error Decoding. Root cause %+v", err)
+	}
+	return buildHPAListV1(obj), nil
+}
+
+//DecodeHPAListV2Beta1 reads k8s HorizontalPodAutoScaler yaml and trasform to HPA v2beta1 object
+func DecodeHPAListV2Beta1(data []byte) ([]HPA, error) {
+	scheme := buildHPAListV2Beta1Scheme()
+	obj, _, err := decode(scheme, data)
+	if err != nil {
+		return []HPA{}, fmt.Errorf("Error Decoding. Root cause %+v", err)
+	}
+	return buildHPAListV2Beta1(obj), nil
+}
+
+//DecodeHPAListV2Beta2 reads k8s HorizontalPodAutoScaler yaml and trasform to HPA v2beta2 object
+func DecodeHPAListV2Beta2(data []byte) ([]HPA, error) {
+	scheme := buildHPAListV2Beta2Scheme()
+	obj, _, err := decode(scheme, data)
+	if err != nil {
+		return []HPA{}, fmt.Errorf("Error Decoding. Root cause %+v", err)
+	}
+	return buildHPAListV2Beta2(obj), nil
+}
+
+func buildHPAListV1(obj interface{}) []HPA {
 	list := []HPA{}
 	vpaList := obj.(*v1.HorizontalPodAutoscalerList)
+	for _, v := range vpaList.Items {
+		gvk := v.GetObjectKind().GroupVersionKind()
+		hpa, err := buildHPA(&v, GroupVersionKind{Group: gvk.Group, Version: gvk.Version, Kind: gvk.Kind})
+		if err != nil {
+			fmt.Printf("Unable to decode object %+v. Root cause: %+v", gvk, err)
+		} else {
+			list = append(list, hpa)
+		}
+	}
+	return list
+}
+
+func buildHPAListV2Beta1(obj interface{}) []HPA {
+	list := []HPA{}
+	vpaList := obj.(*v2beta1.HorizontalPodAutoscalerList)
+	for _, v := range vpaList.Items {
+		gvk := v.GetObjectKind().GroupVersionKind()
+		hpa, err := buildHPA(&v, GroupVersionKind{Group: gvk.Group, Version: gvk.Version, Kind: gvk.Kind})
+		if err != nil {
+			fmt.Printf("Unable to decode object %+v. Root cause: %+v", gvk, err)
+		} else {
+			list = append(list, hpa)
+		}
+	}
+	return list
+}
+
+func buildHPAListV2Beta2(obj interface{}) []HPA {
+	list := []HPA{}
+	vpaList := obj.(*v2beta2.HorizontalPodAutoscalerList)
 	for _, v := range vpaList.Items {
 		gvk := v.GetObjectKind().GroupVersionKind()
 		hpa, err := buildHPA(&v, GroupVersionKind{Group: gvk.Group, Version: gvk.Version, Kind: gvk.Kind})

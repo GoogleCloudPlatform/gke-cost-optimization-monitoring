@@ -569,59 +569,107 @@ mosaicLayout:
         - plotType: LINE
           timeSeriesQuery:
             timeSeriesQueryLanguage: |-
-              { t_0:
-                  fetch k8s_container
-                  | metric 'kubernetes.io/container/memory/request_bytes'
-                  | filter
-                      (resource.cluster_name = 'CLUSTER_TO_REPLACE'
-                      && resource.namespace_name = '{{$namespace}}'
-                      && metadata.system_labels.top_level_controller_name = '{{$controllerName}}')
-                  | group_by 1m, [value_request_bytes_mean: mean(value.request_bytes)]
-                  | every 1m
-                  | group_by [pod_name: resource.pod_name],
-                      [value_request_bytes_mean_sum: sum(value_request_bytes_mean)]
-                  | group_by [metric: 'request_bytes'],
-                      [avg_value: mean(value_request_bytes_mean_sum)]
-              ; t_1:
-                  fetch k8s_container
-                  | metric 'kubernetes.io/container/memory/limit_bytes'
-                  | filter
-                      (resource.cluster_name = 'CLUSTER_TO_REPLACE'
-                      && resource.namespace_name = '{{$namespace}}'
-                      && metadata.system_labels.top_level_controller_name = '{{$controllerName}}')
-                  | group_by 1m, [value_limit_bytes_mean: mean(value.limit_bytes)]
-                  | every 1m
-                  | group_by [pod_name: resource.pod_name],
-                      [value_limit_bytes_mean_sum: sum(value_limit_bytes_mean)]
-                  | group_by [metric: 'limit_bytes'],
-                      [avg_value: mean(value_limit_bytes_mean_sum)]
-              ; t_2:
-                  fetch k8s_container
-                  | metric 'kubernetes.io/container/memory/used_bytes'
-                  | filter
-                      (resource.cluster_name = 'CLUSTER_TO_REPLACE'
-                      && resource.namespace_name = '{{$namespace}}'
-                      && metadata.system_labels.top_level_controller_name = '{{$controllerName}}'
-                      && metric.memory_type = 'non-evictable')
-                  | group_by 1m, [value_used_bytes_mean: mean(value.used_bytes)]
-                  | every 1m
-                  | group_by [pod_name: resource.pod_name],
-                      [value_used_bytes_mean_sum: sum(value_used_bytes_mean)]
-                  | group_by [metric: 'used_bytes'],
-                      [avg_value: max(value_used_bytes_mean_sum)]
-              ; recommendation:
-                  fetch k8s_container
-                  | metric 'custom.googleapis.com/podautoscaler/vpa/memory/target_recommendation'
-                  | filter
-                      (resource.cluster_name = 'CLUSTER_TO_REPLACE'
-                      && resource.namespace_name = '{{$namespace}}'
-                      && metric.targetref_name = '{{$controllerName}}')
-                  | group_by 1m,
-                      [value_vpa_recommendation_mean: mean(value.target_recommendation)]
-                  | every 1m
-                  | group_by [metric: 'vpa_recommended_bytes'],
-                      [avg_value: cast_double(sum(value_vpa_recommendation_mean))] }
-              | union
+                { t_0:
+                    fetch k8s_container
+                    | metric 'kubernetes.io/container/memory/request_bytes'
+                    | filter
+                        (resource.cluster_name = 'CLUSTER_TO_REPLACE'
+                        && resource.namespace_name = '{{$namespace}}'
+                        && metadata.system_labels.top_level_controller_name = '{{$controllerName}}')
+                    | group_by 1m, [value_request_bytes_mean: mean(value.request_bytes)]
+                    | every 1m
+                    | group_by [pod_name: resource.pod_name],
+                        [value_request_bytes_mean_sum: sum(value_request_bytes_mean)]
+                    | group_by [metric: 'request_bytes'],
+                        [avg_value: mean(value_request_bytes_mean_sum)]
+                ; t_1:
+                    fetch k8s_container
+                    | metric 'kubernetes.io/container/memory/limit_bytes'
+                    | filter
+                        (resource.cluster_name = 'CLUSTER_TO_REPLACE'
+                        && resource.namespace_name = '{{$namespace}}'
+                        && metadata.system_labels.top_level_controller_name = '{{$controllerName}}')
+                    | group_by 1m, [value_limit_bytes_mean: mean(value.limit_bytes)]
+                    | every 1m
+                    | group_by [pod_name: resource.pod_name],
+                        [value_limit_bytes_mean_sum: sum(value_limit_bytes_mean)]
+                    | group_by [metric: 'limit_bytes'],
+                        [avg_value: mean(value_limit_bytes_mean_sum)]
+                ; t_2:
+                    fetch k8s_container
+                    | metric 'kubernetes.io/container/memory/used_bytes'
+                    | filter
+                        (resource.cluster_name = 'CLUSTER_TO_REPLACE'
+                        && resource.namespace_name = '{{$namespace}}'
+                        && metadata.system_labels.top_level_controller_name = '{{$controllerName}}'
+                        && metric.memory_type = 'non-evictable')
+                    | group_by 1m, [value_used_bytes_mean: mean(value.used_bytes)]
+                    | every 1m
+                    | group_by [pod_name: resource.pod_name],
+                        [value_used_bytes_mean_sum: sum(value_used_bytes_mean)]
+                    | group_by [metric: 'used_bytes'],
+                        [avg_value: max(value_used_bytes_mean_sum)]
+                ; recommendation:
+                    { vpa:
+                        fetch k8s_container
+                        | metric 'custom.googleapis.com/podautoscaler/vpa/memory/target_recommendation'
+                        | filter
+                            (resource.cluster_name = 'CLUSTER_TO_REPLACE'
+                            && resource.namespace_name = '{{$namespace}}'
+                            && metric.targetref_name = '{{$controllerName}}')
+                        | group_by 1m,
+                            [value_vpa_recommendation_mean: mean(value.target_recommendation)]
+                        | every 1m
+                        | group_by [cluster_name: resource.cluster_name, kind:metric.targetref_kind, controller_name:metric.targetref_name],
+                            [recommendation: cast_double(sum(value_vpa_recommendation_mean))] 
+                    ; hpa:
+                        fetch k8s_pod
+                        | metric 'custom.googleapis.com/podautoscaler/hpa/memory/target_utilization'
+                        | filter 
+                            (resource.cluster_name == 'CLUSTER_TO_REPLACE'
+                            && resource.namespace_name == '{{$namespace}}'
+                                    && metric.targetref_name = '{{$controllerName}}')                              
+                        | group_by 1m, [value_memory_mean: mean(value.target_utilization)]
+                        | every 1m
+                        | group_by [cluster_name: resource.cluster_name, kind:metric.targetref_kind, controller_name:metric.targetref_name],
+                                [target: cast_double(mean(value_memory_mean))]
+                    }
+                    | outer_join [0],[0]
+                    | value [recommendation: if( gt(hpa.target, 0),  string_to_double("no-value-hack"), vpa.recommendation ) ]
+                    | group_by [metric: 'vpa_recommended_bytes'], 
+                            [avg_value: mean(recommendation)]
+                ; hpa:
+                    { requested:
+                        fetch k8s_container
+                        | metric 'kubernetes.io/container/memory/request_bytes'
+                        | filter
+                            (resource.cluster_name = 'CLUSTER_TO_REPLACE'
+                            && resource.namespace_name = '{{$namespace}}'
+                            && metadata.system_labels.top_level_controller_name = '{{$controllerName}}')
+                        | group_by 1m, [value_request_bytes_mean: mean(value.request_bytes)]
+                        | every 1m
+                        | group_by [pod_name: resource.pod_name],
+                            [value_request_bytes_mean_sum: sum(value_request_bytes_mean)]
+                        | group_by [metric: 'request_bytes'],
+                            [value: mean(value_request_bytes_mean_sum)]
+                    ; hpa:
+                        fetch k8s_pod
+                        | metric 'custom.googleapis.com/podautoscaler/hpa/memory/target_utilization'
+                        | filter 
+                            (resource.cluster_name == 'CLUSTER_TO_REPLACE'
+                            && resource.namespace_name == '{{$namespace}}'
+                                    && metric.targetref_name = '{{$controllerName}}')                              
+                        | group_by 1m, [value_memory_mean: mean(value.target_utilization)]
+                        | every 1m
+                        | group_by [cluster_name: resource.cluster_name, controller_name:metric.targetref_name],
+                                [target: cast_units(mean(value_memory_mean), 'By')]
+                    }
+                    | join 
+                    | value [hpa_target: requested.value * (hpa.target/100)]
+                    | group_by [metric: 'hpa_target_utilizaiton'],
+                                [avg_value: mean(hpa_target)]           
+                }
+                | union
         timeshiftDuration: 0s
         yAxis:
             label: y1Axis
