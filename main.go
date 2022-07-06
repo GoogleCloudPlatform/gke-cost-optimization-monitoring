@@ -52,12 +52,16 @@ func main() {
 	log.Infof("************** METRICS EXPORTER STARTED (version %s) **************", version)
 
 	now := time.Now().Format(time.RFC3339)
-
-	vpas := retrieveVPAs()
-	tsList := mon.BuildVPARecommendationTimeSeries(vpas, now)
+	
+	DISABLEVPA := os.Getenv("DISABLEVPA")
 
 	hpas := retrieveHPAs()
-	tsList = append(tsList, mon.BuildHPATargetUtilizationTimeSeries(hpas, now)...)
+	tsList := mon.BuildHPATargetUtilizationTimeSeries(hpas, now)
+
+	if DISABLEVPA != "true" {
+		vpas := retrieveVPAs()
+		tsList = append(tsList, mon.BuildVPARecommendationTimeSeries(vpas, now)...)
+	}
 
 	err := mon.ExportMetrics(tsList)
 	exitOnError("Failed to instantiate cloud monitoring object", err)
