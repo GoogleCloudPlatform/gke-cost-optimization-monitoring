@@ -1,0 +1,376 @@
+{
+    "category": "CUSTOM",
+    "displayName": "Container Recommendations",
+    "mosaicLayout": {
+      "columns": 12,
+      "tiles": [
+        {
+          "height": 6,
+          "widget": {
+            "timeSeriesTable": {
+              "dataSets": [
+                {
+                  "tableDisplayOptions": {},
+                  "timeSeriesQuery": {
+                    "timeSeriesQueryLanguage": "def all_hpa_workloads =\n  { hpa_cpu:\n      fetch\n        'k8s_pod' ::\n        'custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization'\n      | every 1m\n      | group_by\n          [resource.project_id, resource.location, resource.cluster_name,\n           resource.namespace_name, controller_name: metric.targetref_name,\n           controller_type: metric.targetref_kind]\n           \n  ; hpa_memory:\n      fetch\n        'k8s_pod' ::\n        'custom.googleapis.com/podautoscaler/hpa/memory/target_utilization'\n      | every 1m\n      | group_by\n          [resource.project_id, resource.location, resource.cluster_name,\n           resource.namespace_name, controller_name: metric.targetref_name,\n           controller_type: metric.targetref_kind]\n            }\n  | union\n  | value [-1]\n  ;\n\ndef workloads_without_hpa = {\nhpa: @all_hpa_workloads\n;\nworkloads: fetch k8s_container::kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [value_request_cores_mean: mean(value.request_cores)]\n  | every 1m\n  | group_by\n      [\n      resource.project_id, \n      resource.location, \n      resource.cluster_name,\n      resource.namespace_name, controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],\n       [value_request_cores_mean: mean(value_request_cores_mean)]\n    \n    | value [1]\n\n} \n| outer_join 0\n| filter(hpa.int_lit + workloads.int_lit == 1)\n;\n\ndef current_cpu_request = \nfetch k8s_container::kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [value_request_cores_mean: mean(value.request_cores)]\n  | every 1m\n  | group_by\n      [container: resource.container_name, resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],\n       [cpu_request_cores: mean(value_request_cores_mean *1000)]\n;\n\ndef cpu_request_recommendation = \nfetch k8s_scale ::\n    kubernetes.io/autoscaler/container/cpu/per_replica_recommended_request_cores\n  | group_by 1m,\n    [value_per_replica_recommended_request_cores_mean:\n       mean(value.per_replica_recommended_request_cores)]\n  | every 1m\n  | group_by\n      [container: metric.container_name, resource.project_id,\n       resource.location, resource.cluster_name, resource.namespace_name,\n       resource.controller_kind, controller_name: resource.controller_name],\n    [value_per_replica_recommended_request_cores_mean_aggregate:\n       aggregate(value_per_replica_recommended_request_cores_mean)]\n| group_by [],\n    [cpu_request_recommendation:\n       percentile(value_per_replica_recommended_request_cores_mean_aggregate,\n         95) * 1000]\n        | within 14d\n;\n\ndef current_cpu_limit = \nfetch k8s_container::kubernetes.io/container/cpu/limit_cores\n| group_by 1m, [value_limit_cores_mean: mean(value.limit_cores)]\n| every 1m\n|group_by [container: resource.container_name, resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],\n    [current_cpu_limit: aggregate(value_limit_cores_mean)*1000]\n;\n\ndef container_count = \nfetch k8s_container:: kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [row_count: row_count()]\n  | every 1m\n  | group_by\n      [container: resource.container_name,resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],[row_count: row_count()]    \n;\n\ndef current_memory_request = \nfetch k8s_container::kubernetes.io/container/memory/request_bytes\n| group_by 1m, [value_request_bytes_max: max(value.request_bytes)]\n| every 1m\n| group_by\n      [container: resource.container_name,resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],\n    [current_memory_request: max(value_request_bytes_max)/1024/1024]\n;\n\ndef current_memory_limit =\nfetch k8s_container::kubernetes.io/container/memory/limit_bytes\n| group_by 1m, [value_limit_bytes_max: max(value.limit_bytes)]\n| every 1m\n| group_by [container: resource.container_name,resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type], [current_memory_limit: max(value_limit_bytes_max)/1024/1024] \n;\ndef memory_recommendation = \nfetch k8s_scale\n| metric\n    'kubernetes.io/autoscaler/container/memory/per_replica_recommended_request_bytes'\n| group_by 1m, [value_per_replica_recommended_request_bytes_max:\n       max(value.per_replica_recommended_request_bytes)]\n| group_by\n      [container: metric.container_name, resource.project_id,\n       resource.location, resource.cluster_name, resource.namespace_name,\n       resource.controller_kind, controller_name: resource.controller_name],\n    [memory_recommendation:\n       max(value_per_replica_recommended_request_bytes_max)/1024/1024]\n| within 14d\n;\n{\n@workloads_without_hpa\n;\ncurrent_cpu_request: @current_cpu_request\n;\ncurrent_cpu_limit: @current_cpu_limit\n; \ncontainer_count: @container_count\n;\ncpu_recommendation: @cpu_request_recommendation\n; \ncurrent_memory_limit: @current_memory_limit\n;\ncurrent_memory_request: @current_memory_request\n;\nmemory_recommendation: @memory_recommendation\n}\n| join\n|within(14d)\n|  map [\nProject: resource.project_id,\nresource.project_id,\nLocation: resource.location,\nCluster: resource.cluster_name,\nNamespace: resource.namespace_name,\nController_Type: resource.controller_kind,\nController_Name: controller_name,\nContainer_Name: container_name,\nCurrent_Num_Containers: container_count.row_count,\n\n#CPU Columns\nCurrent_CPU_Request_mCPU: int_round(cpu_request_cores),\nCurrent_CPU_Limit_mCPU: int_round(current_cpu_limit),  \nRecommendation_CPU_Request_mCPU: int_round(cpu_request_recommendation),\nRecommendation_CPU_Limit_mCPU: int_round(current_cpu_limit *(cpu_request_recommendation/current_cpu_request)),\nDelta_CPU_Request: int_round((cpu_request_cores - cpu_request_recommendation)* container_count.row_count)  ,\n\n#Memory Columns\nCurrent_MEM_Request_MiB: int_ceil(current_memory_request),\nCurrent_MEM_Limit_MiB: int_ceil(current_memory_limit), \nRecommendation_MEM_Request_MiB: int_ceil(memory_recommendation),\nRecommendation_MEM_Limit_MiB: int_ceil(current_memory_limit * (memory_recommendation/current_memory_request)),\nDelta_MEM_Request: int_ceil(((current_memory_request - memory_recommendation) * container_count.row_count))\n]\n\n| value [(cast_units(abs(int_round((cpu_request_cores - cpu_request_recommendation)* container_count.row_count)),\"\") + cast_units(int_ceil(abs(current_memory_request - memory_recommendation) * (0.021811/0.002923)) * container_count.row_count, \"\"))]\n\n\n\n\n"
+                  }
+                }
+              ]
+            },
+            "title": "Container Recommendations"
+          },
+          "width": 12,
+          "xPos": 0,
+          "yPos": 12
+        },
+        {
+          "height": 1,
+          "widget": {
+            "text": {
+              "content": "This dashboard shows container recommendations at scale and across GCP projects",
+              "format": "RAW"
+            },
+            "title": "GKE Optimization Container Recommendations"
+          },
+          "width": 12,
+          "xPos": 0,
+          "yPos": 0
+        },
+        {
+          "height": 14,
+          "widget": {
+            "collapsibleGroup": {
+              "collapsed": false
+            },
+            "title": "Top 5: Memory and CPU Recommendations"
+          },
+          "width": 12,
+          "xPos": 0,
+          "yPos": 4
+        },
+        {
+          "height": 4,
+          "widget": {
+            "timeSeriesTable": {
+              "dataSets": [
+                {
+                  "tableDisplayOptions": {},
+                  "timeSeriesQuery": {
+                    "timeSeriesQueryLanguage": "def all_hpa_workloads =\n  { hpa_cpu:\n      fetch\n        'k8s_pod' ::\n        'custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization'\n\n      | group_by\n          [resource.project_id, resource.location, resource.cluster_name,\n           resource.namespace_name, controller_name: metric.targetref_name,\n           controller_type: metric.targetref_kind]\n           \n  ; hpa_memory:\n      fetch\n        'k8s_pod' ::\n        'custom.googleapis.com/podautoscaler/hpa/memory/target_utilization'\n\n      | group_by\n          [resource.project_id, resource.location, resource.cluster_name,\n           resource.namespace_name, controller_name: metric.targetref_name,\n           controller_type: metric.targetref_kind]\n            }\n  | union\n  | value [-1]\n  ;\n\ndef workloads_without_hpa = {\nhpa: @all_hpa_workloads\n;\nworkloads: fetch k8s_container::kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [value_request_cores_mean: mean(value.request_cores)]\n\n  | group_by\n      [\n      resource.project_id, \n      resource.location, \n      resource.cluster_name,\n      resource.namespace_name, controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],\n       [value_request_cores_mean: mean(value_request_cores_mean)]\n    \n    | value [1]\n\n} \n| outer_join 0\n| filter(hpa.int_lit + workloads.int_lit == 1)\n;\n\ndef current_cpu_request = \nfetch k8s_container::kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [value_request_cores_mean: mean(value.request_cores)]\n  | every 1m\n  | group_by\n      [container: resource.container_name, resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],\n       [current_cpu_request: mean(value_request_cores_mean *1000)]\n;\n\ndef cpu_recommendation = \nfetch k8s_scale\n| metric\n    'kubernetes.io/autoscaler/container/cpu/per_replica_recommended_request_cores'\n\n| group_by 14d,\n    [value_per_replica_recommended_request_cores_mean:\n       mean(value.per_replica_recommended_request_cores)]\n\n| group_by\n    [container: metric.container_name, resource.project_id,\n       resource.location, resource.cluster_name, resource.namespace_name,\n       resource.controller_kind, controller_name: resource.controller_name],   [cpu_recommendations:\n       aggregate(value_per_replica_recommended_request_cores_mean)]\n       | within 14d\n;\n\ndef current_cpu_limit = \nfetch k8s_container::kubernetes.io/container/cpu/limit_cores\n| group_by 1m, [value_limit_cores_mean: mean(value.limit_cores)]\n| every 1m\n|group_by [container: resource.container_name, resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type], \n    [current_cpu_limit: mean(value_limit_cores_mean) * 1000]\n;\n\ndef container_count = \nfetch k8s_container:: kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [row_count: row_count()]\n  | every 1m\n  | group_by\n      [container: resource.container_name,resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],[row_count: row_count()]    \n;\n\n\n{\n@workloads_without_hpa\n;\ncurrent_cpu_request: @current_cpu_request\n;\ncurrent_cpu_limit: @current_cpu_limit\n; \ncontainer_count: @container_count\n;\ncpu_recommendation: @cpu_recommendation\n\n}\n| join\n|  map [\nProject: resource.project_id,\nresource.project_id,\nLocation: resource.location,\nCluster: resource.cluster_name,\nNamespace: resource.namespace_name,\nController_Type: resource.controller_kind,\nController_Name: controller_name,\nContainer_Name: container_name,\nCurrent_Num_Containers: container_count.row_count,\n\n#CPU Columns\nCurrent_CPU_Request_mCPU: int_round(current_cpu_request),\nCurrent_CPU_Limit_mCPU: int_round(current_cpu_limit),  \nRecommendation_CPU_Request_mCPU: int_round(cpu_recommendations),\nRecommendation_CPU_Limit_mCPU: int_round((current_cpu_limit) *(cpu_recommendations/current_cpu_request)),\nDelta_CPU_Request: int_round((current_cpu_request - cpu_recommendations)* container_count.row_count) \n]\n| value [(current_cpu_request - cpu_recommendation.cpu_recommendations)* container_count.row_count]\n\n| filter val() > 0\n| top 5\n\n\n\n\n"
+                  }
+                }
+              ]
+            },
+            "title": "CPU: Top 5 over-provisioned apps"
+          },
+          "width": 6,
+          "xPos": 0,
+          "yPos": 4
+        },
+        {
+          "height": 4,
+          "widget": {
+            "timeSeriesTable": {
+              "dataSets": [
+                {
+                  "tableDisplayOptions": {},
+                  "timeSeriesQuery": {
+                    "timeSeriesQueryLanguage": "def all_hpa_workloads =\n  { hpa_cpu:\n      fetch\n        'k8s_pod' ::\n        'custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization'\n      | every 1m\n      | group_by\n          [resource.project_id, resource.location, resource.cluster_name,\n           resource.namespace_name, controller_name: metric.targetref_name,\n           controller_type: metric.targetref_kind]\n           \n  ; hpa_memory:\n      fetch\n        'k8s_pod' ::\n        'custom.googleapis.com/podautoscaler/hpa/memory/target_utilization'\n      | every 1m\n      | group_by\n          [resource.project_id, resource.location, resource.cluster_name,\n           resource.namespace_name, controller_name: metric.targetref_name,\n           controller_type: metric.targetref_kind]\n            }\n  | union\n  | value [-1]\n  ;\n\ndef workloads_without_hpa = {\nhpa: @all_hpa_workloads\n;\nworkloads: fetch k8s_container::kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [value_request_cores_mean: mean(value.request_cores)]\n  | every 1m\n  | group_by\n      [\n      resource.project_id, \n      resource.location, \n      resource.cluster_name,\n      resource.namespace_name, controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],\n       [value_request_cores_mean: mean(value_request_cores_mean)]\n    \n    | value [1]\n\n} \n| outer_join 0\n| filter(hpa.int_lit + workloads.int_lit == 1)\n;\n\ndef current_cpu_request = \nfetch k8s_container::kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [value_request_cores_mean: mean(value.request_cores)]\n  | every 1m\n  | group_by\n      [container: resource.container_name, resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],\n       [current_cpu_request: mean(value_request_cores_mean *1000)]\n;\n\ndef cpu_recommendation = \nfetch k8s_scale\n| metric\n    'kubernetes.io/autoscaler/container/cpu/per_replica_recommended_request_cores'\n\n| group_by 1m,\n    [value_per_replica_recommended_request_cores_mean:\n       mean(value.per_replica_recommended_request_cores)]\n| every 1m\n| group_by\n    [container: metric.container_name, resource.project_id,\n       resource.location, resource.cluster_name, resource.namespace_name,\n       resource.controller_kind, controller_name: resource.controller_name],   [cpu_recommendations:\n       aggregate(value_per_replica_recommended_request_cores_mean)]\n      | within 14d\n;\n\ndef current_cpu_limit = \nfetch k8s_container::kubernetes.io/container/cpu/limit_cores\n| group_by 1m, [value_limit_cores_mean: mean(value.limit_cores)]\n| every 1m\n|group_by [container: resource.container_name, resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type], \n    [current_cpu_limit: mean(value_limit_cores_mean) * 1000]\n;\n\ndef container_count = \nfetch k8s_container:: kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [row_count: row_count()]\n  | every 1m\n  | group_by\n      [container: resource.container_name,resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],[row_count: row_count()]    \n;\n\n\n{\n@workloads_without_hpa\n;\ncurrent_cpu_request: @current_cpu_request\n;\ncurrent_cpu_limit: @current_cpu_limit\n; \ncontainer_count: @container_count\n;\ncpu_recommendation: @cpu_recommendation\n\n}\n| join\n|  map [\nProject: resource.project_id,\nresource.project_id,\nLocation: resource.location,\nCluster: resource.cluster_name,\nNamespace: resource.namespace_name,\nController_Type: resource.controller_kind,\nController_Name: controller_name,\nContainer_Name: container_name,\nCurrent_Num_Containers: container_count.row_count,\n\n#CPU Columns\nCurrent_CPU_Request_mCPU: int_round(current_cpu_request),\nCurrent_CPU_Limit_mCPU: int_round(current_cpu_limit),  \nRecommendation_CPU_Request_mCPU: int_round(cpu_recommendations),\nRecommendation_CPU_Limit_mCPU: int_round((current_cpu_limit) *(cpu_recommendations/current_cpu_request)),\nDelta_CPU_Request: int_round((current_cpu_request - cpu_recommendations)* container_count.row_count) \n]\n| value [(current_cpu_request - cpu_recommendation)* container_count.row_count]\n\n| filter val() < 0\n| bottom 5\n\n\n\n\n"
+                  }
+                }
+              ]
+            },
+            "title": "CPU: Top 5 under-provisioned apps"
+          },
+          "width": 6,
+          "xPos": 6,
+          "yPos": 4
+        },
+        {
+          "height": 3,
+          "widget": {
+            "title": "CPU",
+            "xyChart": {
+              "chartOptions": {
+                "mode": "COLOR"
+              },
+              "dataSets": [
+                {
+                  "minAlignmentPeriod": "60s",
+                  "plotType": "LINE",
+                  "targetAxis": "Y1",
+                  "timeSeriesQuery": {
+                    "apiSource": "DEFAULT_CLOUD",
+                    "timeSeriesFilter": {
+                      "aggregation": {
+                        "alignmentPeriod": "60s",
+                        "crossSeriesReducer": "REDUCE_SUM",
+                        "groupByFields": [
+                          "resource.label.\"project_id\"",
+                          "resource.label.\"location\"",
+                          "resource.label.\"cluster_name\"",
+                          "resource.label.\"pod_name\"",
+                          "metadata.system_labels.\"top_level_controller_name\""
+                        ],
+                        "perSeriesAligner": "ALIGN_RATE"
+                      },
+                      "filter": "metric.type=\"kubernetes.io/container/cpu/core_usage_time\" resource.type=\"k8s_container\""
+                    }
+                  }
+                },
+                {
+                  "legendTemplate": "\n",
+                  "minAlignmentPeriod": "60s",
+                  "plotType": "LINE",
+                  "targetAxis": "Y1",
+                  "timeSeriesQuery": {
+                    "apiSource": "DEFAULT_CLOUD",
+                    "timeSeriesFilter": {
+                      "aggregation": {
+                        "alignmentPeriod": "60s",
+                        "crossSeriesReducer": "REDUCE_SUM",
+                        "groupByFields": [
+                          "resource.label.\"project_id\"",
+                          "resource.label.\"location\"",
+                          "resource.label.\"cluster_name\"",
+                          "resource.label.\"pod_name\"",
+                          "metadata.system_labels.\"top_level_controller_name\""
+                        ],
+                        "perSeriesAligner": "ALIGN_MEAN"
+                      },
+                      "filter": "metric.type=\"kubernetes.io/container/cpu/request_cores\" resource.type=\"k8s_container\"",
+                      "secondaryAggregation": {
+                        "alignmentPeriod": "60s",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "perSeriesAligner": "ALIGN_NONE"
+                      }
+                    }
+                  }
+                },
+                {
+                  "minAlignmentPeriod": "60s",
+                  "plotType": "LINE",
+                  "targetAxis": "Y1",
+                  "timeSeriesQuery": {
+                    "apiSource": "DEFAULT_CLOUD",
+                    "timeSeriesFilter": {
+                      "aggregation": {
+                        "alignmentPeriod": "60s",
+                        "crossSeriesReducer": "REDUCE_SUM",
+                        "groupByFields": [
+                          "resource.label.\"project_id\"",
+                          "resource.label.\"location\"",
+                          "resource.label.\"cluster_name\"",
+                          "resource.label.\"pod_name\"",
+                          "metadata.system_labels.\"top_level_controller_name\""
+                        ],
+                        "perSeriesAligner": "ALIGN_MEAN"
+                      },
+                      "filter": "metric.type=\"kubernetes.io/container/cpu/limit_cores\" resource.type=\"k8s_container\"",
+                      "secondaryAggregation": {
+                        "alignmentPeriod": "60s",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "perSeriesAligner": "ALIGN_NONE"
+                      }
+                    }
+                  }
+                },
+                {
+                  "minAlignmentPeriod": "60s",
+                  "plotType": "LINE",
+                  "targetAxis": "Y1",
+                  "timeSeriesQuery": {
+                    "apiSource": "DEFAULT_CLOUD",
+                    "timeSeriesFilter": {
+                      "aggregation": {
+                        "alignmentPeriod": "60s",
+                        "crossSeriesReducer": "REDUCE_SUM",
+                        "groupByFields": [
+                          "resource.label.\"project_id\"",
+                          "resource.label.\"location\"",
+                          "resource.label.\"cluster_name\"",
+                          "resource.label.\"controller_name\""
+                        ],
+                        "perSeriesAligner": "ALIGN_MEAN"
+                      },
+                      "filter": "metric.type=\"kubernetes.io/autoscaler/container/cpu/per_replica_recommended_request_cores\" resource.type=\"k8s_scale\""
+                    }
+                  }
+                }
+              ],
+              "timeshiftDuration": "0s",
+              "yAxis": {
+                "label": "y1Axis",
+                "scale": "LINEAR"
+              }
+            }
+          },
+          "width": 6,
+          "xPos": 0,
+          "yPos": 1
+        },
+        {
+          "height": 3,
+          "widget": {
+            "title": "Memory",
+            "xyChart": {
+              "chartOptions": {
+                "mode": "COLOR"
+              },
+              "dataSets": [
+                {
+                  "minAlignmentPeriod": "60s",
+                  "plotType": "LINE",
+                  "targetAxis": "Y1",
+                  "timeSeriesQuery": {
+                    "apiSource": "DEFAULT_CLOUD",
+                    "timeSeriesFilter": {
+                      "aggregation": {
+                        "alignmentPeriod": "60s",
+                        "crossSeriesReducer": "REDUCE_SUM",
+                        "groupByFields": [
+                          "resource.label.\"project_id\"",
+                          "resource.label.\"location\"",
+                          "resource.label.\"cluster_name\"",
+                          "resource.label.\"pod_name\"",
+                          "metadata.system_labels.\"top_level_controller_name\""
+                        ],
+                        "perSeriesAligner": "ALIGN_MEAN"
+                      },
+                      "filter": "metric.type=\"kubernetes.io/container/memory/used_bytes\" resource.type=\"k8s_container\""
+                    }
+                  }
+                },
+                {
+                  "legendTemplate": "Requested",
+                  "minAlignmentPeriod": "60s",
+                  "plotType": "LINE",
+                  "targetAxis": "Y1",
+                  "timeSeriesQuery": {
+                    "apiSource": "DEFAULT_CLOUD",
+                    "timeSeriesFilter": {
+                      "aggregation": {
+                        "alignmentPeriod": "60s",
+                        "crossSeriesReducer": "REDUCE_SUM",
+                        "groupByFields": [
+                          "resource.label.\"project_id\"",
+                          "resource.label.\"location\"",
+                          "resource.label.\"cluster_name\"",
+                          "resource.label.\"pod_name\"",
+                          "metadata.system_labels.\"top_level_controller_name\""
+                        ],
+                        "perSeriesAligner": "ALIGN_MEAN"
+                      },
+                      "filter": "metric.type=\"kubernetes.io/container/memory/request_bytes\" resource.type=\"k8s_container\"",
+                      "secondaryAggregation": {
+                        "alignmentPeriod": "60s",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "perSeriesAligner": "ALIGN_NONE"
+                      }
+                    }
+                  }
+                },
+                {
+                  "minAlignmentPeriod": "60s",
+                  "plotType": "LINE",
+                  "targetAxis": "Y1",
+                  "timeSeriesQuery": {
+                    "apiSource": "DEFAULT_CLOUD",
+                    "timeSeriesFilter": {
+                      "aggregation": {
+                        "alignmentPeriod": "60s",
+                        "crossSeriesReducer": "REDUCE_SUM",
+                        "groupByFields": [
+                          "resource.label.\"project_id\"",
+                          "resource.label.\"location\"",
+                          "resource.label.\"cluster_name\"",
+                          "resource.label.\"pod_name\"",
+                          "metadata.system_labels.\"top_level_controller_name\""
+                        ],
+                        "perSeriesAligner": "ALIGN_MEAN"
+                      },
+                      "filter": "metric.type=\"kubernetes.io/container/memory/limit_bytes\" resource.type=\"k8s_container\"",
+                      "secondaryAggregation": {
+                        "alignmentPeriod": "60s",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "perSeriesAligner": "ALIGN_NONE"
+                      }
+                    }
+                  }
+                },
+                {
+                  "minAlignmentPeriod": "60s",
+                  "plotType": "LINE",
+                  "targetAxis": "Y1",
+                  "timeSeriesQuery": {
+                    "apiSource": "DEFAULT_CLOUD",
+                    "timeSeriesFilter": {
+                      "aggregation": {
+                        "alignmentPeriod": "60s",
+                        "crossSeriesReducer": "REDUCE_SUM",
+                        "groupByFields": [
+                          "resource.label.\"project_id\"",
+                          "resource.label.\"location\"",
+                          "resource.label.\"namespace_name\"",
+                          "resource.label.\"controller_name\""
+                        ],
+                        "perSeriesAligner": "ALIGN_MEAN"
+                      },
+                      "filter": "metric.type=\"kubernetes.io/autoscaler/container/memory/per_replica_recommended_request_bytes\" resource.type=\"k8s_scale\""
+                    }
+                  }
+                }
+              ],
+              "timeshiftDuration": "0s",
+              "yAxis": {
+                "label": "y1Axis",
+                "scale": "LINEAR"
+              }
+            }
+          },
+          "width": 6,
+          "xPos": 6,
+          "yPos": 1
+        },
+        {
+          "height": 4,
+          "widget": {
+            "timeSeriesTable": {
+              "dataSets": [
+                {
+                  "tableDisplayOptions": {},
+                  "timeSeriesQuery": {
+                    "timeSeriesQueryLanguage": "def all_hpa_workloads =\n  { hpa_cpu:\n      fetch\n        'k8s_pod' ::\n        'custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization'\n      | every 1m\n      | group_by\n          [resource.project_id, resource.location, resource.cluster_name,\n           resource.namespace_name, controller_name: metric.targetref_name,\n           controller_type: metric.targetref_kind]\n           \n  ; hpa_memory:\n      fetch\n        'k8s_pod' ::\n        'custom.googleapis.com/podautoscaler/hpa/memory/target_utilization'\n      | every 1m\n      | group_by\n          [resource.project_id, resource.location, resource.cluster_name,\n           resource.namespace_name, controller_name: metric.targetref_name,\n           controller_type: metric.targetref_kind]\n            }\n  | union\n  | value [-1]\n  ;\n\ndef workloads_without_hpa = {\nhpa: @all_hpa_workloads\n;\nworkloads: fetch k8s_container::kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [value_request_cores_mean: mean(value.request_cores)]\n  | every 1m\n  | group_by\n      [\n      resource.project_id, \n      resource.location, \n      resource.cluster_name,\n      resource.namespace_name, controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type]\n    \n    | value [1]\n\n} \n| outer_join 0\n| filter(hpa.int_lit + workloads.int_lit == 1)\n;\n\ndef container_count = \nfetch k8s_container:: kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [row_count: row_count()]\n  | every 1m\n  | group_by\n      [container: resource.container_name,resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],[row_count: row_count()]    \n;\n\ndef current_memory_request = \nfetch k8s_container::kubernetes.io/container/memory/request_bytes\n| group_by 1m, [value_request_bytes_max: max(value.request_bytes)]\n| every 1m\n| group_by\n      [container: resource.container_name,resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],\n    [current_memory_request: max(value_request_bytes_max)/1024/1024]\n;\n\ndef current_memory_limit =\nfetch k8s_container::kubernetes.io/container/memory/limit_bytes\n| group_by 1m, [value_limit_bytes_max: max(value.limit_bytes)]\n| every 1m\n| group_by [container: resource.container_name,resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type], [current_memory_limit: max(value_limit_bytes_max)/1024/1024] \n;\ndef memory_recommendation = \nfetch k8s_scale\n| metric\n    'kubernetes.io/autoscaler/container/memory/per_replica_recommended_request_bytes'\n| group_by 1m, [value_per_replica_recommended_request_bytes_max:\n       max(value.per_replica_recommended_request_bytes)]\n| group_by\n      [container: metric.container_name, resource.project_id,\n       resource.location, resource.cluster_name, resource.namespace_name,\n       resource.controller_kind, controller_name: resource.controller_name],\n    [memory_recommendation:\n       max(value_per_replica_recommended_request_bytes_max)/1024/1024]\n| within 14d\n;\n{\n@workloads_without_hpa\n; \ncontainer_count: @container_count\n; \ncurrent_memory_limit: @current_memory_limit\n;\ncurrent_memory_request: @current_memory_request\n;\nmemory_recommendation: @memory_recommendation\n}\n| join\n|  map [\nProject: resource.project_id,\nresource.project_id,\nLocation: resource.location,\nCluster: resource.cluster_name,\nNamespace: resource.namespace_name,\nController_Type: resource.controller_kind,\nController_Name: controller_name,\nContainer_Name: container_name,\nCurrent_Num_Containers: container_count.row_count,\n\n#Memory Columns\nCurrent_MEM_Request_MiB: int_ceil(current_memory_request),\nCurrent_MEM_Limit_MiB: int_ceil(current_memory_limit), \nRecommendation_MEM_Request_MiB: int_ceil(memory_recommendation),\nRecommendation_MEM_Limit_MiB: int_ceil(current_memory_limit * (memory_recommendation/current_memory_request)),\nDelta_MEM_Request: int_ceil((current_memory_request - memory_recommendation) * container_count.row_count)\n]\n| value [ cast_units(int_ceil(abs(current_memory_request - memory_recommendation) * (0.021811/0.002923)) * container_count.row_count, \"\")]\n| filter val() > 0\n| top 5\n\n\n\n\n"
+                  }
+                }
+              ]
+            },
+            "title": "Memory: Top 5 over-provisioned apps"
+          },
+          "width": 6,
+          "xPos": 0,
+          "yPos": 8
+        },
+        {
+          "height": 4,
+          "widget": {
+            "timeSeriesTable": {
+              "dataSets": [
+                {
+                  "tableDisplayOptions": {},
+                  "timeSeriesQuery": {
+                    "timeSeriesQueryLanguage": "def all_hpa_workloads =\n  { hpa_cpu:\n      fetch\n        'k8s_pod' ::\n        'custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization'\n      | every 1m\n      | group_by\n          [resource.project_id, resource.location, resource.cluster_name,\n           resource.namespace_name, controller_name: metric.targetref_name,\n           controller_type: metric.targetref_kind]\n           \n  ; hpa_memory:\n      fetch\n        'k8s_pod' ::\n        'custom.googleapis.com/podautoscaler/hpa/memory/target_utilization'\n      | every 1m\n      | group_by\n          [resource.project_id, resource.location, resource.cluster_name,\n           resource.namespace_name, controller_name: metric.targetref_name,\n           controller_type: metric.targetref_kind]\n            }\n  | union\n  | value [-1]\n  ;\n\ndef workloads_without_hpa = {\nhpa: @all_hpa_workloads\n;\nworkloads: fetch k8s_container::kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [value_request_cores_mean: mean(value.request_cores)]\n  | every 1m\n  | group_by\n      [\n      resource.project_id, \n      resource.location, \n      resource.cluster_name,\n      resource.namespace_name, controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type]\n    \n    | value [1]\n\n} \n| outer_join 0\n| filter(hpa.int_lit + workloads.int_lit == 1)\n;\n\ndef container_count = \nfetch k8s_container:: kubernetes.io/container/cpu/request_cores\n  | group_by 1m, [row_count: row_count()]\n  | every 1m\n  | group_by\n      [container: resource.container_name,resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],[row_count: row_count()]    \n;\n\ndef current_memory_request = \nfetch k8s_container::kubernetes.io/container/memory/request_bytes\n| group_by 1m, [value_request_bytes_max: max(value.request_bytes)]\n| every 1m\n| group_by\n      [container: resource.container_name,resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type],\n    [current_memory_request: max(value_request_bytes_max)/1024/1024]\n;\n\ndef current_memory_limit =\nfetch k8s_container::kubernetes.io/container/memory/limit_bytes\n| group_by 1m, [value_limit_bytes_max: max(value.limit_bytes)]\n| every 1m\n| group_by [container: resource.container_name,resource.project_id, resource.location, resource.cluster_name,\n       resource.namespace_name, container_name: resource.container_name,\n       controller_name: metadata.system_labels.top_level_controller_name,\n       controller_type: metadata.system_labels.top_level_controller_type], [current_memory_limit: max(value_limit_bytes_max)/1024/1024] \n;\ndef memory_recommendation = \nfetch k8s_scale\n| metric\n    'kubernetes.io/autoscaler/container/memory/per_replica_recommended_request_bytes'\n| group_by 1m, [value_per_replica_recommended_request_bytes_max:\n       max(value.per_replica_recommended_request_bytes)]\n| group_by\n      [container: metric.container_name, resource.project_id,\n       resource.location, resource.cluster_name, resource.namespace_name,\n       resource.controller_kind, controller_name: resource.controller_name],\n    [memory_recommendation:\n       max(value_per_replica_recommended_request_bytes_max)/1024/1024]\n| within 14d\n;\n{\n@workloads_without_hpa\n; \ncontainer_count: @container_count\n; \ncurrent_memory_limit: @current_memory_limit\n;\ncurrent_memory_request: @current_memory_request\n;\nmemory_recommendation: @memory_recommendation\n}\n| join\n|  map [\nProject: resource.project_id,\nresource.project_id,\nLocation: resource.location,\nCluster: resource.cluster_name,\nNamespace: resource.namespace_name,\nController_Type: resource.controller_kind,\nController_Name: controller_name,\nContainer_Name: container_name,\nCurrent_Num_Containers: container_count.row_count,\n\n#Memory Columns\nCurrent_MEM_Request_MiB: int_ceil(current_memory_request),\nCurrent_MEM_Limit_MiB: int_ceil(current_memory_limit), \nRecommendation_MEM_Request_MiB: int_ceil(memory_recommendation),\nRecommendation_MEM_Limit_MiB: int_ceil(current_memory_limit * (memory_recommendation/current_memory_request)),\nDelta_MEM_Request: int_ceil((current_memory_request - memory_recommendation) * container_count.row_count)\n]\n| value [ cast_units(int_ceil(abs(current_memory_request - memory_recommendation) * (0.021811/0.002923)) * container_count.row_count, \"\")]\n| filter val() < 0\n| bottom 5\n\n\n\n\n"
+                  }
+                }
+              ]
+            },
+            "title": "Memory: Top 5 under-provisioned apps"
+          },
+          "width": 6,
+          "xPos": 6,
+          "yPos": 8
+        }
+      ]
+    },
+    "name": "projects/384880087923/dashboards/51f878bd-4781-4a4a-9831-a9e51b711a99"
+  }
