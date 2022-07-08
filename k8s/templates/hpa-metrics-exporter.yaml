@@ -51,7 +51,7 @@ subjects:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: metrics-exporter-config-cd1m
+  name: metrics-exporter-config-cm
   namespace: custom-metrics
   labels:
     app: metrics-exporter
@@ -74,6 +74,9 @@ spec:
           containers:
           - name: metrics-exporter
             image: gcr.io/PROJECT_ID/metrics-exporter
+            envFrom:
+              - configMapRef:
+                 name: metrics-exporter-config
           restartPolicy: OnFailure
       backoffLimit: 1
 
