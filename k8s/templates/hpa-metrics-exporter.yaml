@@ -48,16 +48,6 @@ subjects:
   namespace: custom-metrics
 
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: metrics-exporter-config
-  namespace: custom-metrics
-  labels:
-    app: metrics-exporter
-data:
-  DISABLEVPA: "true"
----
 
 apiVersion: batch/v1
 kind: CronJob
@@ -74,9 +64,9 @@ spec:
           containers:
           - name: metrics-exporter
             image: gcr.io/PROJECT_ID/metrics-exporter
-            envFrom:
-              - configMapRef:
-                 name: metrics-exporter-config
+            env:
+              - name: DISABLEVPA
+                value: "true"
           restartPolicy: OnFailure
       backoffLimit: 1
 
