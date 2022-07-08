@@ -51,7 +51,7 @@ subjects:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: metrics-exporter-config-cm
+  name: metrics-exporter-config
   namespace: custom-metrics
   labels:
     app: metrics-exporter
