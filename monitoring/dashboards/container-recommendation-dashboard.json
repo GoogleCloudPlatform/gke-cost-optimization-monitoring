@@ -22,19 +22,6 @@
         },
         "width": 12,
         "xPos": 0,
-        "yPos": 4
-      },
-      {
-        "height": 1,
-        "widget": {
-          "text": {
-            "content": "This dashboard shows container recommendations at scale and across GCP projects",
-            "format": "RAW"
-          },
-          "title": "GKE Optimization Container Recommendations"
-        },
-        "width": 12,
-        "xPos": 0,
         "yPos": 0
       },
       {
@@ -47,7 +34,7 @@
         },
         "width": 12,
         "xPos": 0,
-        "yPos": 10
+        "yPos": 6
       },
       {
         "height": 4,
@@ -67,7 +54,7 @@
         },
         "width": 6,
         "xPos": 0,
-        "yPos": 10
+        "yPos": 6
       },
       {
         "height": 4,
@@ -87,253 +74,7 @@
         },
         "width": 6,
         "xPos": 6,
-        "yPos": 10
-      },
-      {
-        "height": 3,
-        "widget": {
-          "title": "CPU",
-          "xyChart": {
-            "chartOptions": {
-              "mode": "COLOR"
-            },
-            "dataSets": [
-              {
-                "minAlignmentPeriod": "60s",
-                "plotType": "LINE",
-                "targetAxis": "Y1",
-                "timeSeriesQuery": {
-                  "apiSource": "DEFAULT_CLOUD",
-                  "timeSeriesFilter": {
-                    "aggregation": {
-                      "alignmentPeriod": "60s",
-                      "crossSeriesReducer": "REDUCE_SUM",
-                      "groupByFields": [
-                        "resource.label.\"project_id\"",
-                        "resource.label.\"location\"",
-                        "resource.label.\"cluster_name\"",
-                        "resource.label.\"pod_name\"",
-                        "metadata.system_labels.\"top_level_controller_name\""
-                      ],
-                      "perSeriesAligner": "ALIGN_RATE"
-                    },
-                    "filter": "metric.type=\"kubernetes.io/container/cpu/core_usage_time\" resource.type=\"k8s_container\""
-                  }
-                }
-              },
-              {
-                "legendTemplate": "\n",
-                "minAlignmentPeriod": "60s",
-                "plotType": "LINE",
-                "targetAxis": "Y1",
-                "timeSeriesQuery": {
-                  "apiSource": "DEFAULT_CLOUD",
-                  "timeSeriesFilter": {
-                    "aggregation": {
-                      "alignmentPeriod": "60s",
-                      "crossSeriesReducer": "REDUCE_SUM",
-                      "groupByFields": [
-                        "resource.label.\"project_id\"",
-                        "resource.label.\"location\"",
-                        "resource.label.\"cluster_name\"",
-                        "resource.label.\"pod_name\"",
-                        "metadata.system_labels.\"top_level_controller_name\""
-                      ],
-                      "perSeriesAligner": "ALIGN_MEAN"
-                    },
-                    "filter": "metric.type=\"kubernetes.io/container/cpu/request_cores\" resource.type=\"k8s_container\"",
-                    "secondaryAggregation": {
-                      "alignmentPeriod": "60s",
-                      "crossSeriesReducer": "REDUCE_MEAN",
-                      "perSeriesAligner": "ALIGN_NONE"
-                    }
-                  }
-                }
-              },
-              {
-                "minAlignmentPeriod": "60s",
-                "plotType": "LINE",
-                "targetAxis": "Y1",
-                "timeSeriesQuery": {
-                  "apiSource": "DEFAULT_CLOUD",
-                  "timeSeriesFilter": {
-                    "aggregation": {
-                      "alignmentPeriod": "60s",
-                      "crossSeriesReducer": "REDUCE_SUM",
-                      "groupByFields": [
-                        "resource.label.\"project_id\"",
-                        "resource.label.\"location\"",
-                        "resource.label.\"cluster_name\"",
-                        "resource.label.\"pod_name\"",
-                        "metadata.system_labels.\"top_level_controller_name\""
-                      ],
-                      "perSeriesAligner": "ALIGN_MEAN"
-                    },
-                    "filter": "metric.type=\"kubernetes.io/container/cpu/limit_cores\" resource.type=\"k8s_container\"",
-                    "secondaryAggregation": {
-                      "alignmentPeriod": "60s",
-                      "crossSeriesReducer": "REDUCE_MEAN",
-                      "perSeriesAligner": "ALIGN_NONE"
-                    }
-                  }
-                }
-              },
-              {
-                "minAlignmentPeriod": "60s",
-                "plotType": "LINE",
-                "targetAxis": "Y1",
-                "timeSeriesQuery": {
-                  "apiSource": "DEFAULT_CLOUD",
-                  "timeSeriesFilter": {
-                    "aggregation": {
-                      "alignmentPeriod": "60s",
-                      "crossSeriesReducer": "REDUCE_SUM",
-                      "groupByFields": [
-                        "resource.label.\"project_id\"",
-                        "resource.label.\"location\"",
-                        "resource.label.\"cluster_name\"",
-                        "resource.label.\"controller_name\""
-                      ],
-                      "perSeriesAligner": "ALIGN_MEAN"
-                    },
-                    "filter": "metric.type=\"kubernetes.io/autoscaler/container/cpu/per_replica_recommended_request_cores\" resource.type=\"k8s_scale\""
-                  }
-                }
-              }
-            ],
-            "timeshiftDuration": "0s",
-            "yAxis": {
-              "label": "y1Axis",
-              "scale": "LINEAR"
-            }
-          }
-        },
-        "width": 6,
-        "xPos": 0,
-        "yPos": 1
-      },
-      {
-        "height": 3,
-        "widget": {
-          "title": "Memory",
-          "xyChart": {
-            "chartOptions": {
-              "mode": "COLOR"
-            },
-            "dataSets": [
-              {
-                "minAlignmentPeriod": "60s",
-                "plotType": "LINE",
-                "targetAxis": "Y1",
-                "timeSeriesQuery": {
-                  "apiSource": "DEFAULT_CLOUD",
-                  "timeSeriesFilter": {
-                    "aggregation": {
-                      "alignmentPeriod": "60s",
-                      "crossSeriesReducer": "REDUCE_SUM",
-                      "groupByFields": [
-                        "resource.label.\"project_id\"",
-                        "resource.label.\"location\"",
-                        "resource.label.\"cluster_name\"",
-                        "resource.label.\"pod_name\"",
-                        "metadata.system_labels.\"top_level_controller_name\""
-                      ],
-                      "perSeriesAligner": "ALIGN_MEAN"
-                    },
-                    "filter": "metric.type=\"kubernetes.io/container/memory/used_bytes\" resource.type=\"k8s_container\""
-                  }
-                }
-              },
-              {
-                "legendTemplate": "Requested",
-                "minAlignmentPeriod": "60s",
-                "plotType": "LINE",
-                "targetAxis": "Y1",
-                "timeSeriesQuery": {
-                  "apiSource": "DEFAULT_CLOUD",
-                  "timeSeriesFilter": {
-                    "aggregation": {
-                      "alignmentPeriod": "60s",
-                      "crossSeriesReducer": "REDUCE_SUM",
-                      "groupByFields": [
-                        "resource.label.\"project_id\"",
-                        "resource.label.\"location\"",
-                        "resource.label.\"cluster_name\"",
-                        "resource.label.\"pod_name\"",
-                        "metadata.system_labels.\"top_level_controller_name\""
-                      ],
-                      "perSeriesAligner": "ALIGN_MEAN"
-                    },
-                    "filter": "metric.type=\"kubernetes.io/container/memory/request_bytes\" resource.type=\"k8s_container\"",
-                    "secondaryAggregation": {
-                      "alignmentPeriod": "60s",
-                      "crossSeriesReducer": "REDUCE_MEAN",
-                      "perSeriesAligner": "ALIGN_NONE"
-                    }
-                  }
-                }
-              },
-              {
-                "minAlignmentPeriod": "60s",
-                "plotType": "LINE",
-                "targetAxis": "Y1",
-                "timeSeriesQuery": {
-                  "apiSource": "DEFAULT_CLOUD",
-                  "timeSeriesFilter": {
-                    "aggregation": {
-                      "alignmentPeriod": "60s",
-                      "crossSeriesReducer": "REDUCE_SUM",
-                      "groupByFields": [
-                        "resource.label.\"project_id\"",
-                        "resource.label.\"location\"",
-                        "resource.label.\"cluster_name\"",
-                        "resource.label.\"pod_name\"",
-                        "metadata.system_labels.\"top_level_controller_name\""
-                      ],
-                      "perSeriesAligner": "ALIGN_MEAN"
-                    },
-                    "filter": "metric.type=\"kubernetes.io/container/memory/limit_bytes\" resource.type=\"k8s_container\"",
-                    "secondaryAggregation": {
-                      "alignmentPeriod": "60s",
-                      "crossSeriesReducer": "REDUCE_MEAN",
-                      "perSeriesAligner": "ALIGN_NONE"
-                    }
-                  }
-                }
-              },
-              {
-                "minAlignmentPeriod": "60s",
-                "plotType": "LINE",
-                "targetAxis": "Y1",
-                "timeSeriesQuery": {
-                  "apiSource": "DEFAULT_CLOUD",
-                  "timeSeriesFilter": {
-                    "aggregation": {
-                      "alignmentPeriod": "60s",
-                      "crossSeriesReducer": "REDUCE_SUM",
-                      "groupByFields": [
-                        "resource.label.\"project_id\"",
-                        "resource.label.\"location\"",
-                        "resource.label.\"namespace_name\"",
-                        "resource.label.\"controller_name\""
-                      ],
-                      "perSeriesAligner": "ALIGN_MEAN"
-                    },
-                    "filter": "metric.type=\"kubernetes.io/autoscaler/container/memory/per_replica_recommended_request_bytes\" resource.type=\"k8s_scale\""
-                  }
-                }
-              }
-            ],
-            "timeshiftDuration": "0s",
-            "yAxis": {
-              "label": "y1Axis",
-              "scale": "LINEAR"
-            }
-          }
-        },
-        "width": 6,
-        "xPos": 6,
-        "yPos": 1
+        "yPos": 6
       },
       {
         "height": 4,
@@ -353,7 +94,7 @@
         },
         "width": 6,
         "xPos": 0,
-        "yPos": 14
+        "yPos": 10
       },
       {
         "height": 4,
@@ -373,19 +114,7 @@
         },
         "width": 6,
         "xPos": 6,
-        "yPos": 14
-      },
-      {
-        "height": 3,
-        "widget": {
-          "collapsibleGroup": {
-            "collapsed": false
-          },
-          "title": "CPU and Memory: Resource Utilization Data"
-        },
-        "width": 12,
-        "xPos": 0,
-        "yPos": 1
+        "yPos": 10
       }
     ]
   }
