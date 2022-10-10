@@ -84,7 +84,7 @@ fetch k8s_container::kubernetes.io/container/memory/request_bytes
 | group_by [container_name: resource.container_name,resource.project_id, resource.location, resource.cluster_name,
        resource.namespace_name, 
        controller_name: metadata.system_labels.top_level_controller_name,
-       controller_type: metadata.system_labels.top_level_controller_type, value_request_bytes_max],[row_count: row_count()]
+       controller_type: metadata.system_labels.top_level_controller_type],[row_count: row_count()]
 | within {WITHIN_QUERY}
 """,
 "memory_limit_bytes":
