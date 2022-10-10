@@ -113,7 +113,7 @@ GROUP BY 2,3,4,5,6,7,8
 # Current CPU Request Cores Query #
 ###################################
 cpu_request_cores AS(
-SELECT  Project_id, Container, Controller_name, Controller_type, Cluster_name, Location, Namespace, MAX(value) as value
+SELECT  Project_id, Container, Controller_name, Controller_type, Cluster_name, Location, Namespace, AVG(value) as value
 FROM (
   SELECT 
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.project_id') as Project_id,
@@ -137,7 +137,7 @@ GROUP BY  1,2,3,4,5,6,7
 # Current CPU Limit Cores Query   #
 ###################################
 cpu_limit_cores AS(
-  SELECT Project_id, Container, Controller_name, Controller_type, Cluster_name, Location, Namespace, MAX(value) as value
+  SELECT Project_id, Container, Controller_name, Controller_type, Cluster_name, Location, Namespace, AVG(value) as value
 FROM (
   SELECT 
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.project_id') as Project_id,
@@ -161,7 +161,7 @@ GROUP BY  1,2,3,4,5,6,7
 # Current CPU Usage time.        #
 ###################################
 cpu_usage_time AS(
-  SELECT Project_id, Container, Controller_name, Controller_type, Cluster_name, Location, Namespace, MAX(value) as value
+  SELECT Project_id, Container, Controller_name, Controller_type, Cluster_name, Location, Namespace, AVG(value) as value
 FROM (
   SELECT 
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.project_id') as Project_id,
@@ -185,7 +185,7 @@ GROUP BY  1,2,3,4,5,6,7
 # Current Memory Requested Bytes Query #
 ########################################
 memory_request_bytes AS(
-SELECT Project_id, Container, Controller_name, Controller_type, Cluster_name, Location, Namespace, MAX(value) as value
+SELECT Project_id, Container, Controller_name, Controller_type, Cluster_name, Location, Namespace, AVG(value) as value
 FROM (
   SELECT 
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.project_id') as Project_id,
@@ -209,7 +209,7 @@ GROUP BY  1,2,3,4,5,6,7
 # Current Memory Limit Bytes Query     #
 ########################################
 memory_limit_bytes AS(
-SELECT Project_id, Container, Controller_name, Controller_type, Cluster_name, Location, Namespace,  MAX(value) as value
+SELECT Project_id, Container, Controller_name, Controller_type, Cluster_name, Location, Namespace,  AVG(value) as value
 FROM (
   SELECT 
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.project_id') as Project_id,
@@ -233,7 +233,7 @@ GROUP BY  1,2,3,4,5,6,7
 # Current Memory Used Bytes Query      #
 ########################################
 memory_bytes_used AS(
-SELECT Project_id, Container, Controller_name, Controller_type, Cluster_name, Location, Namespace,  MAX(value) as value
+SELECT Project_id, Container, Controller_name, Controller_type, Cluster_name, Location, Namespace,  AVG(value) as value
 FROM (
   SELECT 
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.project_id') as Project_id,
