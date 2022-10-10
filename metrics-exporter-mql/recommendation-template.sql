@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 */
-CREATE MATERIALIZED VIEW project-id.my_dataset.my_mv_table
-AS
+
 ############################
 # NON-HPA WORKLOADS        #
 ############################
@@ -55,7 +54,7 @@ container_count as (
   (pointData.timeInterval.start_time) as Start_time,
   (pointData.timeInterval.end_time) as End_time,
 FROM  containers_without_hpa
-WHERE metricName = 'pmemory_request_bytes'
+WHERE metricName = 'memory_request_bytes'
 AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP()
 ORDER BY Controller_name desc
   ) as t
@@ -80,7 +79,7 @@ FROM
   (pointData.timeInterval.start_time) as Start_time,
 (pointData.timeInterval.end_time) as End_time,
 FROM  containers_without_hpa 
-WHERE metricName = 'pcpu_request_recommendation'
+WHERE metricName = 'cpu_request_recommendation'
 AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP() 
 GROUP BY 1,2,3,4,5,6,7,8,9,10
 )
@@ -104,7 +103,7 @@ FROM (
   (pointData.timeInterval.start_time) as Start_time,
  (pointData.timeInterval.end_time) as End_time,
 FROM  containers_without_hpa
-WHERE metricName = 'pmemory_request_recommendations' 
+WHERE metricName = 'memory_request_recommendations' 
 AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP()
 GROUP BY 1,2,3,4,5,6,7,8,9,10
 )
@@ -128,7 +127,7 @@ FROM (
   (pointData.timeInterval.start_time) as Start_time,
   (pointData.timeInterval.end_time) as End_time,
   FROM containers_without_hpa
-  WHERE metricName = 'pcpu_request_cores' 
+  WHERE metricName = 'cpu_request_cores' 
 AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP()
   GROUP BY 1,2,3,4,5,6,7,8,9,10
 ) 
@@ -152,7 +151,7 @@ FROM (
   (pointData.timeInterval.start_time) as Start_time,
  (pointData.timeInterval.end_time) as End_time,
   FROM  containers_without_hpa 
-  WHERE metricName = 'pcpu_limit_cores'
+  WHERE metricName = 'cpu_limit_cores'
   AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP() 
   GROUP BY 1,2,3,4,5,6,7,8,9,10
 ) 
@@ -176,7 +175,7 @@ FROM (
   (pointData.timeInterval.start_time) as Start_time,
  (pointData.timeInterval.end_time) as End_time,
   FROM  containers_without_hpa 
-  WHERE metricName = 'pcpu_core_usage' 
+  WHERE metricName = 'cpu_core_usage' 
   AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP()
   GROUP BY 1,2,3,4,5,6,7,8,9,10
 ) 
@@ -200,7 +199,7 @@ FROM (
   (pointData.timeInterval.start_time) as Start_time,
  (pointData.timeInterval.end_time) as End_time,
 FROM  containers_without_hpa 
-WHERE metricName = 'pmemory_request_bytes'
+WHERE metricName = 'memory_request_bytes'
 AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP()
   GROUP BY 1,2,3,4,5,6,7,8,9,10
 ) 
@@ -224,7 +223,7 @@ FROM (
   (pointData.timeInterval.start_time) as Start_time,
  (pointData.timeInterval.end_time) as End_time,
 FROM  containers_without_hpa
-WHERE metricName = 'pmemory_limit_bytes' 
+WHERE metricName = 'memory_limit_bytes' 
 AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP()
   GROUP BY 1,2,3,4,5,6,7,8,9,10
 ) 
@@ -248,7 +247,7 @@ FROM (
   (pointData.timeInterval.start_time) as Start_time,
  (pointData.timeInterval.end_time) as End_time,
 FROM  containers_without_hpa
-WHERE metricName = 'pmemory_bytes_used' 
+WHERE metricName = 'memory_bytes_used' 
 AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP()
 GROUP BY 1,2,3,4,5,6,7,8,9,10
 ) 
