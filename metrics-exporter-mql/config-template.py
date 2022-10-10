@@ -61,7 +61,7 @@ fetch k8s_container::kubernetes.io/container/cpu/core_usage_time
 | filter
     (metadata.system_labels.top_level_controller_type != 'DaemonSet')
     && (resource.namespace_name != 'kube-system')
-| align rate(5m)
+| align rate({POINTS_EVERY})
 | every {POINTS_EVERY}
 | group_by
     [container_name: resource.container_name, 
