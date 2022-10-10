@@ -54,7 +54,7 @@ container_count as (
   (pointData.timeInterval.start_time) as Start_time,
   (pointData.timeInterval.end_time) as End_time,
 FROM  containers_without_hpa
-WHERE metricName = 'memory_request_bytes'
+WHERE metricName = 'count'
 AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP()
 ORDER BY Controller_name desc
   ) as t
@@ -195,7 +195,7 @@ FROM (
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.namespace_name') as Namespace,
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'controller_type') as Controller_type,
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'controller_name') as Controller_name,
-  CAST((SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'value_request_bytes_max') as INT64)/1024/1024 as value,
+  CEIL(pointData.values.int64_value/1024/1024) as value,
   (pointData.timeInterval.start_time) as Start_time,
  (pointData.timeInterval.end_time) as End_time,
 FROM  containers_without_hpa 
