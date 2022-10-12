@@ -26,7 +26,7 @@ kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/microserv
 
 echo "To simulate a more realistic environment, create an HPA for Online Boutique deployments"
 
-kubectl get deployments --field-selector='metadata.name!=recommendationservice,metadata.name!=cartservice,metadata.name!=emailservice,metadata.name!=shippingservice' -o go-template-file=k8s/templates/cpu-hpa.gtpl | kubectl apply -f -
+kubectl get deployments --field-selector='metadata.name!=recommendationservice,metadata.name!=cartservice,metadata.name!=shippingservice' -o go-template-file=k8s/templates/cpu-hpa.gtpl | kubectl apply -f -
 kubectl get deployments --field-selector='metadata.name==adservice' -o go-template-file=k8s/templates/memory-hpa.gtpl | kubectl apply -f -
 kubectl get hpa
 
