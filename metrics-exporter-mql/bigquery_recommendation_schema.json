@@ -1,6 +1,9 @@
-bq show --format=prettyjson $PROJECT_ID:mql_metric.recommendations | jq '.schema.fields' > schema.json
-
 [
+    {
+      "name": "recommendation_date",
+      "mode": "Required",
+      "type": "TIMESTAMP"
+    },
     {
       "name": "project_id",
       "mode": "NULLABLE",

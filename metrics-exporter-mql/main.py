@@ -246,7 +246,27 @@ def export_metric_data(event, context):
     token = get_access_token_from_meta_data()
     save_to_bq(token)
 
+def create_recommenation_table(token):
+    """ Create recommenations table in BigQuery
+    """
+    logging.debug("write_to_bigquery")
+    client = bigquery.Client()
+
+    table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.recommendations'
+    
+    job_config = bigquery.QueryJobConfig(destination=table_id)
+
+    with open('./recommendation.sql','r') as file:
+        sql = file.read()
+
+    # Start the query, passing in the extra configuration.
+    query_job = client.query(sql, job_config=job_config)  # Make an API request.
+    query_job.result()  # Wait for the job to complete.
+
+    print("Query results loaded to the table {}".format(table_id))
+
 
 if __name__ == "__main__":
     token = get_access_token_from_gcloud()
     save_to_bq(token)
+    create_recommenation_table(token)
