@@ -37,26 +37,6 @@ ON (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'controlle
 WHERE hpa_workloads.Controller_name IS NULL
 AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP()
 ),
-WITH hpa_workloads as (
-  SELECT DISTINCT
-  (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.project_id') as Project_id,
-  (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'container_name') as Container,
-  (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.location') as Location,
-  (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.cluster_name') as Cluster_name,
-  (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.namespace_name') as Namespace,
-  (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'controller_type') as Controller_type,
-  (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'controller_name') as Controller_name,
-  FROM `root-alignment-365122.metric_export.mql_metrics` 
-  WHERE metricName LIKE '%hpa%' 
-),
-containers_without_hpa as (
-SELECT * 
-FROM `root-alignment-365122.metric_export.mql_metrics` 
-LEFT JOIN hpa_workloads 
-ON (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'controller_name') = hpa_workloads.Controller_name
-WHERE hpa_workloads.Controller_name IS NULL
-AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP()
-)
 SELECT 
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.project_id') as Project_id,
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'container_name') as Container,
