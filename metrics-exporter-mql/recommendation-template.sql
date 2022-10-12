@@ -36,7 +36,7 @@ LEFT JOIN hpa_workloads
 ON (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'controller_name') = hpa_workloads.Controller_name
 WHERE hpa_workloads.Controller_name IS NULL
 AND pointData.timeInterval.start_time  BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND CURRENT_TIMESTAMP()
-),
+)
 SELECT 
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'resource.project_id') as Project_id,
   (SELECT value FROM UNNEST(timeSeriesDescriptor.labels) WHERE key = 'container_name') as Container,
