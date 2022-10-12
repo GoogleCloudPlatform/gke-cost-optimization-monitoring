@@ -137,7 +137,7 @@ fetch k8s_scale :: kubernetes.io/autoscaler/container/memory/per_replica_recomme
 | group_by  
       [container_name: metric.container_name, resource.project_id,
        resource.location, resource.cluster_name, resource.namespace_name,
-       resource.controller_kind, controller_name: resource.controller_name]
+       controller_type: resource.controller_kind, controller_name: resource.controller_name]
 | within {WITHIN_QUERY}
 """,
 
