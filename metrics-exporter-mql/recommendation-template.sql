@@ -74,7 +74,6 @@ SELECT
   CAST(MAX(IF(metricName = "cpu_core_usage", (pointData.values.double_value * 1000), NULL)) AS INT64) AS peak_cpu_usage,
   CAST(AVG(IF(metricName = "cpu_request_cores", (pointData.values.double_value * 1000), NULL)) AS INT64) AS cpu_requested,
   CAST(AVG(IF(metricName = "cpu_limit_cores", (pointData.values.double_value * 1000), NULL)) AS INT64) AS cpu_limit,
-  CAST(APPROX_QUANTILES(((IF(metricName = "cpu_request_recommendation", (pointData.values.double_value * 1000), NULL))), 100)[OFFSET(75)] AS INT64)  AS cpu_recommendation,
-  CAST(AVG(IF(metricName = "cpu_request_recommendation", (pointData.values.double_value * 1000), NULL)) AS INT64) AS cpu_recommendation
+  CAST(APPROX_QUANTILES(((IF(metricName = "cpu_request_recommendation", (pointData.values.double_value * 1000), NULL))), 100)[OFFSET(75)] AS INT64)  AS cpu_recommendation
 FROM containers_without_hpa 
 group by 1,2,3,4,5,6,7
