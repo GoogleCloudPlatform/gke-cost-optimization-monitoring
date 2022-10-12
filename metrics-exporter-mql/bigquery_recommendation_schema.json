@@ -1,0 +1,90 @@
+bq show --format=prettyjson $PROJECT_ID:mql_metric.recommendations | jq '.schema.fields' > schema.json
+
+[
+    {
+      "name": "project_id",
+      "mode": "NULLABLE",
+      "type": "STRING"
+    },
+    {
+      "name": "container",
+      "mode": "NULLABLE",
+      "type": "STRING"
+    },
+    {
+      "name": "location",
+      "mode": "NULLABLE",
+      "type": "STRING"
+    },
+    {
+      "name": "cluster_name",
+      "mode": "NULLABLE",
+      "type": "STRING"
+    },
+    {
+      "name": "namespace",
+      "mode": "NULLABLE",
+      "type": "STRING"
+    },
+    {
+      "name": "controller_type",
+      "mode": "NULLABLE",
+      "type": "STRING"
+    },
+    {
+      "name": "controller_name",
+      "mode": "NULLABLE",
+      "type": "STRING"
+    },
+    {
+      "name": "container_count",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+      "name": "mem_used",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+      "name": "mem_requested",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+      "name": "mem_limit",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+      "name": "mem_recommendations",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+      "name": "cpu_avg_usage",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+      "name": "cpu_max_usage",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+      "name": "cpu_requested",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+      "name": "cpu_limit",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+      "name": "cpu_recommendation",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    }
+  ]
+  
