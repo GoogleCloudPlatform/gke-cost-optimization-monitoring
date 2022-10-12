@@ -72,5 +72,5 @@ CASE
 CAST(
   container_count * (
     (cpu_requested - cpu_recommendation) +  (mem_requested - mem_recommendation)/1024/13.4
-  ) AS INT64) AS Prioritize   
+  ) AS INT64) AS priority  
 FROM recommendations
