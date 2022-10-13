@@ -17,7 +17,7 @@ PUBSUB_TOPIC = "mql_metric_export"
 BIGQUERY_DATASET = "metric_export"
 BIGQUERY_TABLE = "mql_metrics"
 WITHIN_QUERY = "15d"
-POINTS_EVERY = "30m"
+POINTS_EVERY = "4h"
 # IMPORTANT: to guarantee successfully retriving data, please use a time window greater than 5 minutes
 
 MQL_QUERYS = {
