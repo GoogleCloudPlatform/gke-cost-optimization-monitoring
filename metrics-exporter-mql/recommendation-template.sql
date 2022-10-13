@@ -13,7 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 */
-
+INSERT INTO
+  `${PROJECT_ID}.${BIGQUERY_DATASET}.${BIGQUERY_TABLE}`
+    (
+recommendation_date,			
+project_id,			
+container,			
+location,		
+cluster_name,			
+namespace,			
+controller_type,			
+controller_name,			
+container_count,			
+mem_used,			
+mem_requested,			
+mem_limit,			
+mem_recommendation,			
+cpu_avg_usage,			
+cpu_max_usage,			
+cpu_requested,			
+cpu_limit,			
+cpu_recommendation,			
+cpu_diff,			
+mem_diff,			
+QoS,		
+priority)
 ############################
 # NON-HPA WORKLOADS        #
 ############################

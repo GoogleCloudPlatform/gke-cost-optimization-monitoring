@@ -219,7 +219,18 @@ def write_to_bigquery(rows_to_insert):
         print("Encountered errors while inserting rows: {}".format(errors))
 
 def save_to_bq(token):
-    for metric, query in config.MQL_QUERYS.items():
+    for metric, query in config.MQL_COUNT_QUERYS.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    for metric, query in config.MQL_CPU_REQUEST_QUERYS.items():
         pageToken = ""
         while (True):
             result = get_mql_result(token, query, pageToken)
@@ -231,6 +242,94 @@ def save_to_bq(token):
             if not pageToken:
                 print("No more data retrieved")
                 break
+    for metric, query in config.MQL_CPU_LIMIT_QUERYS.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+
+    for metric, query in config.MQL_CPU_USAGE_QUERYS.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+
+    for metric, query in config.MQL_MEM_REQUEST_QUERYS.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    for metric, query in config.MQL_MEM_LIMIT_QUERYS.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    for metric, query in config.MQL_MEM_USED_QUERYS.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    
+    for metric, query in config.MQL_MEM_REC_QUERYS.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    for metric, query in config.MQL_CPU_REC_QUERYS.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+
 
 def export_metric_data(event, context):
     """Background Cloud Function to be triggered by Pub/Sub.
@@ -246,21 +345,19 @@ def export_metric_data(event, context):
     token = get_access_token_from_meta_data()
     save_to_bq(token)
 
-def create_recommenation_table(token):
+def create_recommenation_table():
     """ Create recommenations table in BigQuery
     """
     logging.debug("write_to_bigquery")
     client = bigquery.Client()
 
     table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.recommendations'
-    
-    job_config = bigquery.QueryJobConfig(destination=table_id)
 
     with open('./recommendation.sql','r') as file:
         sql = file.read()
 
     # Start the query, passing in the extra configuration.
-    query_job = client.query(sql, job_config=job_config)  # Make an API request.
+    query_job = client.query(sql)  # Make an API request.
     query_job.result()  # Wait for the job to complete.
 
     print("Query results loaded to the table {}".format(table_id))
@@ -269,4 +366,4 @@ def create_recommenation_table(token):
 if __name__ == "__main__":
     token = get_access_token_from_gcloud()
     save_to_bq(token)
-    create_recommenation_table(token)
+    create_recommenation_table()
