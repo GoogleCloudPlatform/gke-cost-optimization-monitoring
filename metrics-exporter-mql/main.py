@@ -219,7 +219,7 @@ def write_to_bigquery(rows_to_insert):
         print("Encountered errors while inserting rows: {}".format(errors))
 
 def save_to_bq(token):
-    for metric, query in config.MQL_COUNT_QUERYS.items():
+    for metric, query in config.MQL_HPA_QUERY.items():
         pageToken = ""
         while (True):
             result = get_mql_result(token, query, pageToken)
@@ -230,32 +230,18 @@ def save_to_bq(token):
             if not pageToken:
                 print("No more data retrieved")
                 break
-    for metric, query in config.MQL_CPU_REQUEST_QUERYS.items():
+    for metric, query in config.MQL_COUNT_QUERY.items():
         pageToken = ""
         while (True):
             result = get_mql_result(token, query, pageToken)
             if result.get("timeSeriesDescriptor"):
                 row = build_rows(metric, result)
                 write_to_bigquery(row)
-
             pageToken = result.get("nextPageToken")
             if not pageToken:
                 print("No more data retrieved")
                 break
-    for metric, query in config.MQL_CPU_LIMIT_QUERYS.items():
-        pageToken = ""
-        while (True):
-            result = get_mql_result(token, query, pageToken)
-            if result.get("timeSeriesDescriptor"):
-                row = build_rows(metric, result)
-                write_to_bigquery(row)
-
-            pageToken = result.get("nextPageToken")
-            if not pageToken:
-                print("No more data retrieved")
-                break
-
-    for metric, query in config.MQL_CPU_USAGE_QUERYS.items():
+    for metric, query in config.MQL_CPU_REQUEST_QUERY.items():
         pageToken = ""
         while (True):
             result = get_mql_result(token, query, pageToken)
@@ -267,8 +253,7 @@ def save_to_bq(token):
             if not pageToken:
                 print("No more data retrieved")
                 break
-
-    for metric, query in config.MQL_MEM_REQUEST_QUERYS.items():
+    for metric, query in config.MQL_CPU_LIMIT_QUERY.items():
         pageToken = ""
         while (True):
             result = get_mql_result(token, query, pageToken)
@@ -280,7 +265,8 @@ def save_to_bq(token):
             if not pageToken:
                 print("No more data retrieved")
                 break
-    for metric, query in config.MQL_MEM_LIMIT_QUERYS.items():
+
+    for metric, query in config.MQL_CPU_USAGE_QUERY.items():
         pageToken = ""
         while (True):
             result = get_mql_result(token, query, pageToken)
@@ -292,7 +278,32 @@ def save_to_bq(token):
             if not pageToken:
                 print("No more data retrieved")
                 break
-    for metric, query in config.MQL_MEM_USED_QUERYS.items():
+
+    for metric, query in config.MQL_MEM_REQUEST_QUERY.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    for metric, query in config.MQL_MEM_LIMIT_QUERY.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    for metric, query in config.MQL_MEM_USED_QUERY.items():
         pageToken = ""
         while (True):
             result = get_mql_result(token, query, pageToken)
@@ -305,7 +316,7 @@ def save_to_bq(token):
                 print("No more data retrieved")
                 break
     
-    for metric, query in config.MQL_MEM_REC_QUERYS.items():
+    for metric, query in config.MQL_MEM_REC_QUERY.items():
         pageToken = ""
         while (True):
             result = get_mql_result(token, query, pageToken)
@@ -317,7 +328,7 @@ def save_to_bq(token):
             if not pageToken:
                 print("No more data retrieved")
                 break
-    for metric, query in config.MQL_CPU_REC_QUERYS.items():
+    for metric, query in config.MQL_CPU_REC_QUERY.items():
         pageToken = ""
         while (True):
             result = get_mql_result(token, query, pageToken)

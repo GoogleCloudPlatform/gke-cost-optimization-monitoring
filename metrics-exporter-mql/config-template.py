@@ -18,10 +18,9 @@ BIGQUERY_DATASET = "metric_export"
 BIGQUERY_TABLE = "mql_metrics"
 WITHIN_QUERY = "15d"
 POINTS_EVERY = "1d"
-ALL_MQL_QUERIES = ["MQL_COUNT_QUERYS", "MQL_CPU_REQUEST_QUERYS","MQL_CPU_LIMIT_QUERYS","MQL_CPU_USAGE_QUERYS","MQL_MEM_REQUEST_QUERYS","MQL_MEM_LIMIT_QUERYS","MQL_MEM_USED_QUERYS","MQL_MEM_REC_QUERYS","MQL_CPU_REC_QUERYS","MQL_HPA_QUERYS"]
 # IMPORTANT: to guarantee successfully retriving data, please use a time window greater than 8 hours 
 
-MQL_COUNT_QUERYS = {
+MQL_COUNT_QUERY = {
 "count":
 f"""
 fetch k8s_container::kubernetes.io/container/cpu/request_cores
@@ -37,7 +36,7 @@ fetch k8s_container::kubernetes.io/container/cpu/request_cores
        controller_type: metadata.system_labels.top_level_controller_type],[row_count: row_count()]
 | within 1d
 """}
-MQL_CPU_REQUEST_QUERYS = {
+MQL_CPU_REQUEST_QUERY = {
 #CPU Metrics 
 "cpu_request_cores":
 f"""
@@ -56,7 +55,7 @@ fetch k8s_container::kubernetes.io/container/cpu/request_cores
 | within {WITHIN_QUERY}
 """
 }
-MQL_CPU_LIMIT_QUERYS = {
+MQL_CPU_LIMIT_QUERY = {
 "cpu_limit_cores":
 f"""
 fetch k8s_container::kubernetes.io/container/cpu/limit_cores
@@ -73,7 +72,7 @@ fetch k8s_container::kubernetes.io/container/cpu/limit_cores
 | within {WITHIN_QUERY}
 """
 }
-MQL_CPU_USAGE_QUERYS = {
+MQL_CPU_USAGE_QUERY = {
 "cpu_core_usage":
 f"""
 fetch k8s_container::kubernetes.io/container/cpu/core_usage_time
@@ -92,7 +91,7 @@ fetch k8s_container::kubernetes.io/container/cpu/core_usage_time
 | within {WITHIN_QUERY}
 """
 }
-MQL_MEM_REQUEST_QUERYS = {
+MQL_MEM_REQUEST_QUERY = {
 # Memory metrics
 "memory_request_bytes":
 f"""
@@ -108,7 +107,7 @@ fetch k8s_container::kubernetes.io/container/memory/request_bytes
 | within {WITHIN_QUERY}
 """
 }
-MQL_MEM_LIMIT_QUERYS = {
+MQL_MEM_LIMIT_QUERY = {
 "memory_limit_bytes":
 f"""
 fetch k8s_container::kubernetes.io/container/memory/limit_bytes
@@ -123,7 +122,7 @@ fetch k8s_container::kubernetes.io/container/memory/limit_bytes
 | within {WITHIN_QUERY}
 """
 }
-MQL_MEM_USED_QUERYS = {
+MQL_MEM_USED_QUERY = {
 "memory_bytes_used":
 f"""
 fetch k8s_container::kubernetes.io/container/memory/used_bytes
@@ -139,7 +138,7 @@ fetch k8s_container::kubernetes.io/container/memory/used_bytes
 | within {WITHIN_QUERY}
 """
 }
-MQL_MEM_REC_QUERYS = {
+MQL_MEM_REC_QUERY = {
 "memory_request_recommendations":
 f"""
 fetch k8s_scale :: kubernetes.io/autoscaler/container/memory/per_replica_recommended_request_bytes
@@ -151,7 +150,7 @@ fetch k8s_scale :: kubernetes.io/autoscaler/container/memory/per_replica_recomme
 | within {WITHIN_QUERY}
 """
 }
-MQL_CPU_REC_QUERYS = {
+MQL_CPU_REC_QUERY = {
 "cpu_request_recommendation":
 f"""
 fetch k8s_scale :: kubernetes.io/autoscaler/container/cpu/per_replica_recommended_request_cores
@@ -164,7 +163,7 @@ fetch k8s_scale :: kubernetes.io/autoscaler/container/cpu/per_replica_recommende
 | within {WITHIN_QUERY}
 """
 }
-MQL_HPA_QUERYS = {
+MQL_HPA_QUERY = {
 # HPA workloads
 "hpa_cpu":
 f"""
