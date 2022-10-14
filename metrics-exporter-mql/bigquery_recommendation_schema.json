@@ -2,7 +2,7 @@
     {
       "name": "recommendation_date",
       "mode": "Required",
-      "type": "TIMESTAMP"
+      "type": "DATE"
     },
     {
       "name": "project_id",
@@ -60,7 +60,12 @@
       "type": "INTEGER"
     },
     {
-      "name": "mem_recommendations",
+        "name": "mem_diff",
+        "mode": "NULLABLE",
+        "type": "INTEGER"
+      },
+    {
+      "name": "mem_recommendation",
       "mode": "NULLABLE",
       "type": "INTEGER"
     },
@@ -85,9 +90,24 @@
       "type": "INTEGER"
     },
     {
+        "name": "cpu_diff",
+        "mode": "NULLABLE",
+        "type": "INTEGER"
+      },
+    {
       "name": "cpu_recommendation",
       "mode": "NULLABLE",
       "type": "INTEGER"
+    },
+    {
+        "name": "QoS",
+        "mode": "NULLABLE",
+        "type": "STRING"
+    },
+    {
+        "name": "priority",
+        "mode": "NULLABLE",
+        "type": "INTEGER"
     }
   ]
   
