@@ -14,7 +14,7 @@
 # limitations under the License.
 */
 INSERT INTO
-  `${PROJECT_ID}.${BIGQUERY_DATASET}.${BIGQUERY_TABLE}`
+  `${PROJECT_ID}.${BIGQUERY_DATASET}.recommendations`
     (
 recommendation_date,			
 project_id,			
