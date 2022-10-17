@@ -16,8 +16,8 @@ PROJECT_ID = "$PROJECT_ID"
 PUBSUB_TOPIC = "mql_metric_export"
 BIGQUERY_DATASET = "metric_export"
 BIGQUERY_TABLE = "mql_metrics"
-WITHIN_QUERY = "1d"
-POINTS_EVERY = "30m"
+WITHIN_QUERY = "1h"
+POINTS_EVERY = "10m"
 # IMPORTANT: to guarantee successfully retriving data, please use a time window greater than 8 hours 
 
 MQL_COUNT_QUERY = {
