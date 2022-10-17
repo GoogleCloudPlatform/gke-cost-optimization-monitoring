@@ -16,8 +16,8 @@ PROJECT_ID = "$PROJECT_ID"
 PUBSUB_TOPIC = "mql_metric_export"
 BIGQUERY_DATASET = "metric_export"
 BIGQUERY_TABLE = "mql_metrics"
-WITHIN_QUERY = "15d"
-POINTS_EVERY = "1d"
+WITHIN_QUERY = "1d"
+POINTS_EVERY = "30m"
 # IMPORTANT: to guarantee successfully retriving data, please use a time window greater than 8 hours 
 
 MQL_COUNT_QUERY = {
@@ -173,7 +173,7 @@ f"""
           [resource.project_id, resource.location, resource.cluster_name,
            resource.namespace_name, controller_name: metric.targetref_name,
            controller_type: metric.targetref_kind]
-| within 1d
+| within {WITHIN_QUERY}
 """,
 "hpa_memory":
 f"""
@@ -183,7 +183,7 @@ fetch k8s_pod :: custom.googleapis.com/podautoscaler/hpa/memory/target_utilizati
           [resource.project_id, resource.location, resource.cluster_name,
            resource.namespace_name, controller_name: metric.targetref_name,
            controller_type: metric.targetref_kind]
-| within 1d
+| within {WITHIN_QUERY}
 """,
 }
 
