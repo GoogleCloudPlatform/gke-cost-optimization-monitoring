@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  creationTimestamp: null
+  name: lint
+spec:
+  pipelineSpec:
+    tasks:
+    - name: jx-gitops-lint
+      resources: {}
+      taskSpec:
+        metadata: {}
+        stepTemplate:
+          image: uses:jenkins-x/jx3-pipeline-catalog/tasks/go/pullrequest.yaml@versionStream
+          name: ""
+          resources: {}
+          workingDir: /workspace/source
+        steps:
+        - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone-pr.yaml@versionStream
+          name: ""
+          resources: {}
+        - name: make-lint
+          resources:
+            requests:
+              cpu: 1600m
+              memory: 1400Mi
+  podTemplate: {}
+  serviceAccountName: tekton-bot
+  timeout: 60m0s
+status: {}
