@@ -88,7 +88,7 @@ SELECT * ,
 (cpu_requested - cpu_recommendation) AS cpu_diff,
 (mem_requested - mem_recommendation) AS mem_diff,
 CASE
-    WHEN ( + cpu_limit + mem_requested + mem_limit ) = 0 THEN 'Best Effort'
+    WHEN (cpu_requested + cpu_limit + mem_requested + mem_limit ) = 0 THEN 'Best Effort'
     WHEN (cpu_requested = cpu_limit) AND (mem_requested = mem_limit) AND (cpu_requested > 0 and mem_requested > 0)  THEN 'Guaranteed'
     ELSE 'Burstable'
     END
