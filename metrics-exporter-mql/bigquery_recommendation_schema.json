@@ -2,7 +2,7 @@
     {
       "name": "recommendation_timestamp",
       "mode": "Required",
-      "type": "DATE"
+      "type": "TIMESTAMP"
     },
     {
         "name": "location",
