@@ -176,7 +176,83 @@ def append_rows_proto(rows):
     print(f"Writes to stream: '{write_stream.name}' have been committed.")
 
 def save_to_bq(token):
+<<<<<<< HEAD
     for metric, query in config.MQL_QUERY.items():
+=======
+    for metric, query in config.MQL_HPA_QUERY.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    for metric, query in config.MQL_COUNT_QUERY.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    for metric, query in config.MQL_CPU_REQUEST_QUERY.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    for metric, query in config.MQL_CPU_LIMIT_QUERY.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+
+    for metric, query in config.MQL_CPU_USAGE_QUERY.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+
+    for metric, query in config.MQL_MEM_REQUEST_QUERY.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    for metric, query in config.MQL_MEM_LIMIT_QUERY.items():
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
         pageToken = ""
         while (True):
             result = get_mql_result(token, query, pageToken)
@@ -188,8 +264,50 @@ def save_to_bq(token):
             if not pageToken:
                 print("No more data retrieved")
                 break
+<<<<<<< HEAD
     create_recommenation_table()
                 
+=======
+    for metric, query in config.MQL_MEM_USED_QUERY.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    
+    for metric, query in config.MQL_MEM_REC_QUERY.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+    for metric, query in config.MQL_CPU_REC_QUERY.items():
+        pageToken = ""
+        while (True):
+            result = get_mql_result(token, query, pageToken)
+            if result.get("timeSeriesDescriptor"):
+                row = build_rows(metric, result)
+                write_to_bigquery(row)
+
+            pageToken = result.get("nextPageToken")
+            if not pageToken:
+                print("No more data retrieved")
+                break
+
+
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
 def export_metric_data(event, context):
     """Background Cloud Function to be triggered by Pub/Sub.
     Args:
@@ -205,6 +323,7 @@ def export_metric_data(event, context):
     
     token = get_access_token_from_meta_data()
     save_to_bq(token)
+<<<<<<< HEAD
 def purge_raw_metric_data():
     client = bigquery.Client()
         
@@ -216,15 +335,31 @@ def purge_raw_metric_data():
     purge_raw_metric_query_job.result()
     print("Raw metric data pruged from  {}".format(metric_table_id))
     
+=======
+
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
 def create_recommenation_table():
     """ Create recommenations table in BigQuery
     """
     client = bigquery.Client()
+<<<<<<< HEAD
     
     table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.RECOMMENDATION_TABLE}'
     
     with open('./recommendation.sql','r') as file:
         sql = file.read()
+=======
+
+    table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.recommendations'
+
+    with open('./recommendation.sql','r') as file:
+        sql = file.read()
+
+    # Start the query, passing in the extra configuration.
+    query_job = client.query(sql)  # Make an API request.
+    query_job.result()  # Wait for the job to complete.
+
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
     print("Query results loaded to the table {}".format(table_id))
     
     # Start the query, passing in the recommendation query.
@@ -236,6 +371,10 @@ if __name__ == "__main__":
     purge_raw_metric_data()
     token = get_access_token_from_gcloud()
     save_to_bq(token)
+<<<<<<< HEAD
     
     
   
+=======
+    create_recommenation_table()
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40

@@ -2,7 +2,7 @@
     {
       "name": "recommendation_timestamp",
       "mode": "Required",
-      "type": "TIMESTAMP"
+      "type": "DATE"
     },
     {
         "name": "location",
@@ -45,7 +45,36 @@
       "type": "INTEGER"
     },
     {
+<<<<<<< HEAD
       "name": "cpu_requested",
+=======
+      "name": "mem_used",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+      "name": "mem_requested",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+      "name": "mem_limit",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+        "name": "mem_diff",
+        "mode": "NULLABLE",
+        "type": "INTEGER"
+      },
+    {
+      "name": "mem_recommendation",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+      "name": "cpu_avg_usage",
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
       "mode": "NULLABLE",
       "type": "INTEGER"
     },
@@ -65,11 +94,16 @@
       "type": "INTEGER"
     },
     {
+<<<<<<< HEAD
         "name": "recommendation_cpu_limit",
+=======
+        "name": "cpu_diff",
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
         "mode": "NULLABLE",
         "type": "INTEGER"
       },
     {
+<<<<<<< HEAD
         "name": "cpu_delta",
         "mode": "NULLABLE",
         "type": "INTEGER"
@@ -81,10 +115,19 @@
     },
     {
         "name": "cpu_provision_risk",
+=======
+      "name": "cpu_recommendation",
+      "mode": "NULLABLE",
+      "type": "INTEGER"
+    },
+    {
+        "name": "QoS",
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
         "mode": "NULLABLE",
         "type": "STRING"
     },
     {
+<<<<<<< HEAD
         "name": "mem_requested",
         "mode": "NULLABLE",
         "type": "INTEGER"
@@ -126,6 +169,8 @@
       },
    
     {
+=======
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
         "name": "priority",
         "mode": "NULLABLE",
         "type": "INTEGER"

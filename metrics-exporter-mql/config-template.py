@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+<<<<<<< HEAD
 PROJECT_ID = "${PROJECT_ID}"
 PUBSUB_TOPIC = "${PUBSUB_TOPIC}"
 BIGQUERY_DATASET = "${BIGQUERY_DATASET}"
@@ -26,11 +27,24 @@ RECOMMENDATION_WINDOW = "15d"
 MQL_QUERY = {
     "count":
     f"""
+=======
+PROJECT_ID = "$PROJECT_ID"
+PUBSUB_TOPIC = "mql_metric_export"
+BIGQUERY_DATASET = "metric_export"
+BIGQUERY_TABLE = "mql_metrics"
+WITHIN_QUERY = "1h"
+POINTS_EVERY = "10m"
+# IMPORTANT: to guarantee successfully retriving data, please use a time window greater than 8 hours 
+
+MQL_COUNT_QUERY = {
+"count":
+f"""
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
 fetch k8s_container::kubernetes.io/container/cpu/request_cores
   | filter
     (metadata.system_labels.top_level_controller_type != 'DaemonSet')
     && (resource.namespace_name != 'kube-system') 
-  | every {POINTS_EVERY}
+  | every 1d
 | group_by 
     [container_name: resource.container_name, 
     resource.project_id, 
@@ -39,11 +53,20 @@ fetch k8s_container::kubernetes.io/container/cpu/request_cores
     namespace_name: resource.namespace_name, 
        controller_name: metadata.system_labels.top_level_controller_name,
        controller_type: metadata.system_labels.top_level_controller_type],[row_count: row_count()]
+<<<<<<< HEAD
 | within {WITHIN_QUERY}
 """,
     # CPU Metrics
     "cpu_request_cores":
     f"""
+=======
+| within 1d
+"""}
+MQL_CPU_REQUEST_QUERY = {
+#CPU Metrics 
+"cpu_request_cores":
+f"""
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
 fetch k8s_container::kubernetes.io/container/cpu/request_cores
   | filter
     (metadata.system_labels.top_level_controller_type != 'DaemonSet')
@@ -59,15 +82,24 @@ fetch k8s_container::kubernetes.io/container/cpu/request_cores
        controller_name: metadata.system_labels.top_level_controller_name,
        controller_type: metadata.system_labels.top_level_controller_type]
 | within {WITHIN_QUERY}
+<<<<<<< HEAD
 """,
     "cpu_limit_cores":
     f"""
+=======
+"""
+}
+MQL_CPU_LIMIT_QUERY = {
+"cpu_limit_cores":
+f"""
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
 fetch k8s_container::kubernetes.io/container/cpu/limit_cores
 | filter
     (metadata.system_labels.top_level_controller_type != 'DaemonSet')
     && (resource.namespace_name != 'kube-system')
 | every {POINTS_EVERY}
 | group_by 
+<<<<<<< HEAD
         [container_name: resource.container_name, 
     resource.project_id, 
     location: resource.location, 
@@ -96,6 +128,54 @@ fetch k8s_container::kubernetes.io/container/cpu/limit_cores
     """,
     "memory_limit_bytes":
     f"""
+=======
+    [container_name: resource.container_name, 
+    resource.project_id, resource.location, resource.cluster_name,
+       resource.namespace_name, 
+       controller_name: metadata.system_labels.top_level_controller_name,
+       controller_type: metadata.system_labels.top_level_controller_type]
+| within {WITHIN_QUERY}
+"""
+}
+MQL_CPU_USAGE_QUERY = {
+"cpu_core_usage":
+f"""
+fetch k8s_container::kubernetes.io/container/cpu/core_usage_time
+| filter
+    (metadata.system_labels.top_level_controller_type != 'DaemonSet')
+    && (resource.namespace_name != 'kube-system')
+| align rate({POINTS_EVERY})
+| every {POINTS_EVERY}
+| group_by
+    [container_name: resource.container_name, 
+    resource.project_id, resource.location, resource.cluster_name,
+       resource.namespace_name, 
+       controller_name: metadata.system_labels.top_level_controller_name,
+       controller_type: metadata.system_labels.top_level_controller_type],
+           [value_core_usage_time_aggregate: aggregate(value.core_usage_time)]
+| within {WITHIN_QUERY}
+"""
+}
+MQL_MEM_REQUEST_QUERY = {
+# Memory metrics
+"memory_request_bytes":
+f"""
+fetch k8s_container::kubernetes.io/container/memory/request_bytes
+| filter
+    (metadata.system_labels.top_level_controller_type != 'DaemonSet')
+    && (resource.namespace_name != 'kube-system')
+| every {POINTS_EVERY}
+| group_by [container_name: resource.container_name,resource.project_id, resource.location, resource.cluster_name,
+       resource.namespace_name, 
+       controller_name: metadata.system_labels.top_level_controller_name,
+       controller_type: metadata.system_labels.top_level_controller_type]
+| within {WITHIN_QUERY}
+"""
+}
+MQL_MEM_LIMIT_QUERY = {
+"memory_limit_bytes":
+f"""
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
 fetch k8s_container::kubernetes.io/container/memory/limit_bytes
 | filter
     (metadata.system_labels.top_level_controller_type != 'DaemonSet')
@@ -109,9 +189,33 @@ fetch k8s_container::kubernetes.io/container/memory/limit_bytes
        controller_name: metadata.system_labels.top_level_controller_name,
        controller_type: metadata.system_labels.top_level_controller_type]
 | within {WITHIN_QUERY}
+<<<<<<< HEAD
 """,
     "memory_request_recommendations":
     f"""
+=======
+"""
+}
+MQL_MEM_USED_QUERY = {
+"memory_bytes_used":
+f"""
+fetch k8s_container::kubernetes.io/container/memory/used_bytes
+| filter
+    (metadata.system_labels.top_level_controller_type != 'DaemonSet')
+    && (resource.namespace_name != 'kube-system')
+| every {POINTS_EVERY}
+| group_by
+    [container_name: resource.container_name,resource.project_id, resource.location, resource.cluster_name,
+       resource.namespace_name, 
+       controller_name: metadata.system_labels.top_level_controller_name,
+       controller_type: metadata.system_labels.top_level_controller_type]
+| within {WITHIN_QUERY}
+"""
+}
+MQL_MEM_REC_QUERY = {
+"memory_request_recommendations":
+f"""
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
 fetch k8s_scale :: kubernetes.io/autoscaler/container/memory/per_replica_recommended_request_bytes
 | every {RECOMMENDATION_POINTS_EVERY}
 | group_by  
@@ -121,13 +225,23 @@ fetch k8s_scale :: kubernetes.io/autoscaler/container/memory/per_replica_recomme
     cluster_name: resource.cluster_name,
     namespace_name: resource.namespace_name, 
        controller_type: resource.controller_kind, controller_name: resource.controller_name]
+<<<<<<< HEAD
 | within {RECOMMENDATION_WINDOW}
 """,
     "cpu_request_recommendation":
     f"""
+=======
+| within {WITHIN_QUERY}
+"""
+}
+MQL_CPU_REC_QUERY = {
+"cpu_request_recommendation":
+f"""
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
 fetch k8s_scale :: kubernetes.io/autoscaler/container/cpu/per_replica_recommended_request_cores
 | every {RECOMMENDATION_POINTS_EVERY}
 | group_by
+<<<<<<< HEAD
     [container_name: metric.container_name, 
     resource.project_id, 
     location: resource.location, 
@@ -140,8 +254,21 @@ fetch k8s_scale :: kubernetes.io/autoscaler/container/cpu/per_replica_recommende
     # HPA workloads
     "hpa_cpu":
     f"""
+=======
+    [container_name: metric.container_name, resource.project_id,
+       resource.location, resource.cluster_name, resource.namespace_name,
+       resource.controller_kind, controller_name: resource.controller_name]
+
+| within {WITHIN_QUERY}
+"""
+}
+MQL_HPA_QUERY = {
+# HPA workloads
+"hpa_cpu":
+f"""
+>>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
  fetch k8s_pod :: custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization
-   | every {POINTS_EVERY}
+   | every 1d
       | group_by
       [container_name: resource.pod_name, 
     resource.project_id, 
@@ -155,7 +282,7 @@ fetch k8s_scale :: kubernetes.io/autoscaler/container/cpu/per_replica_recommende
     "hpa_memory":
     f"""
 fetch k8s_pod :: custom.googleapis.com/podautoscaler/hpa/memory/target_utilization
-      | every {POINTS_EVERY}
+      | every 1d
       | group_by
           [container_name: resource.pod_name, 
     resource.project_id, 
