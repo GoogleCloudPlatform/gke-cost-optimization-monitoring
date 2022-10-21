@@ -1,59 +1,55 @@
 [
     {
-      "name": "metricName",
-      "mode": "REQUIRED",
-      "type": "STRING"
-    },
-    {
       "name": "timeSeriesDescriptor",
       "type": "RECORD",
       "mode": "REQUIRED",
       "fields": [
         {
-          "name": "labels",
-          "type": "RECORD",
-          "mode": "REPEATED",
-          "fields": [
-            {
-              "name": "key",
-              "type": "STRING",
-              "mode": "NULLABLE"
-            },
-            {
-              "name": "value",
-              "type": "STRING",
-              "mode": "NULLABLE"
-            }
-          ]
+          "name": "container_name",
+          "type": "STRING",
+          "mode": "NULLABLE"
         },
         {
-          "name": "pointDescriptors",
-          "type": "RECORD",
-          "mode": "REPEATED",
-          "fields": [
-            {
-              "name": "key",
-              "type": "STRING",
-              "mode": "NULLABLE"
-            },
-            {
-              "name": "value",
-              "type": "STRING",
-              "mode": "NULLABLE"
-            }
-          ]
+          "name": "project_id",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "location",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "cluster_name",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "namespace_name",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "controller_name",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "controller_type",
+          "type": "STRING",
+          "mode": "NULLABLE"
         }
       ]
     },
     {
       "name": "pointData",
       "type": "RECORD",
-      "mode": "REQUIRED",
+      "mode": "NULLABLE",
       "fields": [
         {
           "name": "timeInterval",
           "type": "RECORD",
-          "mode": "REQUIRED",
+          "mode": "NULLABLE",
           "fields": [
             {
               "name": "start_time",
@@ -63,176 +59,32 @@
             {
               "name": "end_time",
               "type": "TIMESTAMP",
-              "mode": "REQUIRED"
+              "mode": "NULLABLE"
             }
           ]
         },
         {
           "name": "values",
           "type": "RECORD",
-          "mode": "REQUIRED",
+          "mode": "NULLABLE",
           "fields": [
             {
-              "name": "boolean_value",
-              "type": "BOOLEAN",
-              "mode": "NULLABLE"
-            },
-            {
-              "name": "int64_value",
+              "name": "int64Value",
               "type": "INTEGER",
               "mode": "NULLABLE"
             },
             {
-              "name": "double_value",
+              "name": "doubleValue",
               "type": "FLOAT",
               "mode": "NULLABLE"
-            },
-            {
-              "name": "string_value",
-              "type": "STRING",
-              "mode": "NULLABLE"
-            },
-            {
-              "name": "distribution_value",
-              "type": "RECORD",
-              "mode": "NULLABLE",
-              "fields": [
-                {
-                  "mode": "NULLABLE",
-                  "name": "count",
-                  "type": "INTEGER"
-                },
-                {
-                  "mode": "NULLABLE",
-                  "name": "mean",
-                  "type": "NUMERIC"
-                },
-                {
-                  "mode": "NULLABLE",
-                  "name": "sumOfSquaredDeviation",
-                  "type": "NUMERIC"
-                },
-                {
-                  "mode": "NULLABLE",
-                  "name": "range",
-                  "type": "RECORD",
-                  "fields": [
-                    {
-                      "mode": "NULLABLE",
-                      "name": "min",
-                      "type": "NUMERIC"
-                    },
-                    {
-                      "mode": "NULLABLE",
-                      "name": "max",
-                      "type": "NUMERIC"
-                    }
-                  ]
-                },
-                {
-                  "mode": "NULLABLE",
-                  "name": "bucketOptions",
-                  "type": "RECORD",
-                  "fields": [
-                    {
-                      "mode": "NULLABLE",
-                      "name": "linearBuckets",
-                      "type": "RECORD",
-                      "fields": [
-                        {
-                          "mode": "NULLABLE",
-                          "name": "numFiniteBuckets",
-                          "type": "NUMERIC"
-                        },
-                        {
-                          "mode": "NULLABLE",
-                          "name": "width",
-                          "type": "NUMERIC"
-                        },
-                        {
-                          "mode": "NULLABLE",
-                          "name": "offset",
-                          "type": "NUMERIC"
-                        }
-                      ]
-                    },
-                    {
-                      "mode": "NULLABLE",
-                      "name": "exponentialBuckets",
-                      "type": "RECORD",
-                      "fields": [
-                        {
-                          "mode": "NULLABLE",
-                          "name": "numFiniteBuckets",
-                          "type": "NUMERIC"
-                        },
-                        {
-                          "mode": "NULLABLE",
-                          "name": "growthFactor",
-                          "type": "NUMERIC"
-                        },
-                        {
-                          "mode": "NULLABLE",
-                          "name": "scale",
-                          "type": "NUMERIC"
-                        }
-                      ]
-                    },
-                    {
-                      "mode": "NULLABLE",
-                      "name": "explicitBuckets",
-                      "type": "RECORD",
-                      "fields": [
-                        {
-                          "mode": "NULLABLE",
-                          "name": "bounds",
-                          "type": "RECORD",
-                          "fields": [
-                            {
-                              "mode": "REPEATED",
-                              "name": "value",
-                              "type": "NUMERIC"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "mode": "NULLABLE",
-                  "name": "bucketCounts",
-                  "type": "RECORD",
-                  "fields": [
-                    {
-                      "mode": "REPEATED",
-                      "name": "value",
-                      "type": "INTEGER"
-                    }
-                  ]
-                },
-                {
-                  "mode": "NULLABLE",
-                  "name": "exemplars",
-                  "type": "RECORD",
-                  "fields": [
-                    {
-                      "mode": "NULLABLE",
-                      "name": "value",
-                      "type": "NUMERIC"
-                    },
-                    {
-                      "mode": "NULLABLE",
-                      "name": "timestamp",
-                      "type": "STRING"
-                    }
-                  ]
-                }
-              ]
             }
           ]
         }
       ]
+    },
+    {
+      "name": "metricName",
+      "type": "STRING",
+      "mode": "REQUIRED"
     }
   ]
-  

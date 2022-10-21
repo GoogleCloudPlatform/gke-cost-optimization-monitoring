@@ -11,20 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import logging
 import io
-import json
 import base64
 import re
+import logging
+import json
 import config
 import requests
 import subprocess
-
-
-from datetime import datetime
+from datetime import date
 from google.cloud import bigquery
-
+from google.cloud import bigquery_storage_v1
+from google.cloud.bigquery_storage_v1 import types
+from google.cloud.bigquery_storage_v1 import writer
+from google.protobuf import descriptor_pb2
+import metric_record_pb2
+from google.protobuf.json_format import Parse, ParseDict
+# If you update the metric_record.proto protocol buffer definition, run:
+#
+#   protoc --python_out=. metric_record.proto
+#
+# from the samples/snippets directory to generate the metric_record_pb2.py module.
 token = None
 DISTRIBUTION = "DISTRIBUTION"
 
@@ -73,165 +80,116 @@ def build_rows(metric, data):
     rows = []
 
     labelDescriptors = data["timeSeriesDescriptor"]["labelDescriptors"]
-    pointDescriptors = data["timeSeriesDescriptor"]["pointDescriptors"]
 
     for timeseries in data["timeSeriesData"]:
         labelValues = timeseries["labelValues"]
         pointData = timeseries["pointData"]
-
-        # handle >= 1 points, potentially > 1 returned from Monitoring API call
-        for point_idx in range(len(pointData)):
-            labels = []
-            for i in range(len(labelDescriptors)):
-                for v1 in labelDescriptors[i].values():
-                    labels.append(
-                        {"key": v1, "value": ""})
-            for i in range(len(labelValues)):
-                for v2 in labelValues[i].values():
-                    if type(v2) is bool:
-                        labels[i]["value"] = str(v2)
-                    else:
-                        labels[i]["value"] = v2
-
-            point_descriptors = []
-            for j in range(len(pointDescriptors)):
-                for k, v in pointDescriptors[j].items():
-                    point_descriptors.append({"key": k, "value": v})
-
-            row = {
-                "timeSeriesDescriptor": {
-                    "pointDescriptors": point_descriptors,
-                    "labels": labels,
-                }
-            }
-
-            interval = {
-                "start_time": pointData[point_idx]["timeInterval"]["startTime"],
-                "end_time": pointData[point_idx]["timeInterval"]["endTime"]
-            }
-
-            # map the API value types to the BigQuery value types
-            value_type = pointDescriptors[0]["valueType"]
-            bigquery_value_type_index = config.BQ_VALUE_MAP[value_type]
-            api_value_type_index = config.API_VALUE_MAP[value_type]
-            value_type_label = {}
-
-            value = timeseries["pointData"][point_idx]["values"][0][api_value_type_index]
-
-            if value_type == DISTRIBUTION:
-                value_type_label[bigquery_value_type_index] = build_distribution_value(
-                    value)
+        details = {}
+        for idx in range(len(labelDescriptors)):
+            if labelDescriptors[idx]["key"] == "resource.project_id":
+                details["project_id"] = labelValues[idx]["stringValue"]
             else:
-                value_type_label[bigquery_value_type_index] = value
-
+                details[labelDescriptors[idx]["key"]] = labelValues[idx]["stringValue"]
+        row = { "timeSeriesDescriptor": (details)}
+        if "hpa" not in metric:
+            interval = {
+                    "start_time": pointData[0]["timeInterval"]["startTime"],
+                    "end_time": pointData[0]["timeInterval"]["endTime"]
+                }
             point = {
-                "timeInterval": interval,
-                "values": value_type_label
+                    "timeInterval": interval,
+                    "values": pointData[0]["values"][0],
             }
             row["pointData"] = point
-            row["metricName"] = metric
-            rows.append(row)
-
+        row["metricName"] = metric
+        rows.append(row)
     return rows
 
+def create_row_data(row):
+    m = Parse(json.dumps(row), metric_record_pb2.MetricRecord()) 
+    return m.SerializeToString()
 
-def build_distribution_value(value_json):
-    """ Build a distribution value based on the API spec below
-        See https://cloud.google.com/monitoring/api/ref_v3/rest/v3/TimeSeries#Distribution
-    """
-    distribution_value = {}
-    if "count" in value_json:
-        distribution_value["count"] = int(value_json["count"])
-    if "mean" in value_json:
-        distribution_value["mean"] = round(value_json["mean"], 2)
-    if "sumOfSquaredDeviation" in value_json:
-        distribution_value["sumOfSquaredDeviation"] = round(
-            value_json["sumOfSquaredDeviation"], 2)
+def append_rows_proto(rows):
+    """Create a write stream, write some sample data, and commit the stream."""
+    write_client = bigquery_storage_v1.BigQueryWriteClient()
+    parent = write_client.table_path(config.PROJECT_ID, config.BIGQUERY_DATASET, config.BIGQUERY_TABLE)
+    write_stream = types.WriteStream()
 
-    if "range" in value_json:
-        distribution_value_range = {}
-        distribution_value_range["min"] = value_json["range"]["min"]
-        distribution_value_range["max"] = value_json["range"]["max"]
-        distribution_value["range"] = distribution_value_range
+    # When creating the stream, choose the type. Use the PENDING type to wait
+    # until the stream is committed before it is visible. See:
+    # https://cloud.google.com/bigquery/docs/reference/storage/rpc/google.cloud.bigquery.storage.v1#google.cloud.bigquery.storage.v1.WriteStream.Type
+    write_stream.type_ = types.WriteStream.Type.PENDING
+    write_stream = write_client.create_write_stream(
+        parent=parent, write_stream=write_stream
+    )
+    stream_name = write_stream.name
 
-    bucketOptions = {}
-    if "linearBuckets" in value_json["bucketOptions"]:
-        linearBuckets = {
-            "numFiniteBuckets": value_json["bucketOptions"]["linearBuckets"]["numFiniteBuckets"],
-            "width": value_json["bucketOptions"]["linearBuckets"]["width"],
-            "offset": value_json["bucketOptions"]["linearBuckets"]["offset"]
-        }
-        bucketOptions["linearBuckets"] = linearBuckets
-    elif "exponentialBuckets" in value_json["bucketOptions"]:
-        exponentialBuckets = {
-            "numFiniteBuckets": value_json["bucketOptions"]["exponentialBuckets"]["numFiniteBuckets"],
-            "growthFactor": round(value_json["bucketOptions"]["exponentialBuckets"]["growthFactor"], 2),
-            "scale": value_json["bucketOptions"]["exponentialBuckets"]["scale"]
-        }
-        bucketOptions["exponentialBuckets"] = exponentialBuckets
-    elif "explicitBuckets" in value_json["bucketOptions"]:
-        explicitBuckets = {
-            "bounds": {
-                "value": value_json["bucketOptions"]["explicitBuckets"]["bounds"]
-            }
+    # Create a template with fields needed for the first request.
+    request_template = types.AppendRowsRequest()
 
-        }
-        bucketOptions["explicitBuckets"] = explicitBuckets
-    if bucketOptions:
-        distribution_value["bucketOptions"] = bucketOptions
+    # The initial request must contain the stream name.
+    request_template.write_stream = stream_name
 
-    if "bucketCounts" in value_json:
-        bucketCounts = {}
-        bucket_count_list = []
-        for bucket_count_val in value_json["bucketCounts"]:
-            bucket_count_list.append(int(bucket_count_val))
-        bucketCounts["value"] = bucket_count_list
-        distribution_value["bucketCounts"] = bucketCounts
+    # So that BigQuery knows how to parse the serialized_rows, generate a
+    # protocol buffer representation of your message descriptor.
+    proto_schema = types.ProtoSchema()
+    proto_descriptor = descriptor_pb2.DescriptorProto()
+    metric_record_pb2.MetricRecord.DESCRIPTOR.CopyToProto(proto_descriptor)
+    proto_schema.proto_descriptor = proto_descriptor
+    proto_data = types.AppendRowsRequest.ProtoData()
+    proto_data.writer_schema = proto_schema
+    request_template.proto_rows = proto_data
 
-    if "exemplars" in value_json:
-        exemplars_list = []
-        for exemplar in value_json["exemplars"]:
-            exemplar = {
-                "value": exemplar["value"],
-                "timestamp": exemplar["timestamp"]
-            }
-            exemplars_list.append(exemplar)
-        distribution_value["exemplars"] = exemplars_list
+    # Some stream types support an unbounded number of requests. Construct an
+    # AppendRowsStream to send an arbitrary number of requests to a stream.
+    append_rows_stream = writer.AppendRowsStream(write_client, request_template)
 
-    logging.debug("created the distribution_value: {}".format(
-        json.dumps(distribution_value, sort_keys=True, indent=4)))
-    return distribution_value
+    # Create a batch of row data by appending proto2 serialized bytes to the
+    # serialized_rows repeated field.
+    proto_rows = types.ProtoRows()
+    for row in rows:
+        proto_rows.serialized_rows.append(create_row_data(row))
+    
+    request = types.AppendRowsRequest()
+    request.offset = 0
+    proto_data = types.AppendRowsRequest.ProtoData()
+    proto_data.rows = proto_rows
+    request.proto_rows = proto_data
 
+    response_future_1 = append_rows_stream.send(request)
 
-def write_to_bigquery(rows_to_insert):
-    """ Write rows to the BigQuery stats table using the BigQuery client
-    """
-    logging.debug("write_to_bigquery")
-    client = bigquery.Client()
+    print(response_future_1)
 
-    table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.BIGQUERY_TABLE}'
-    print(table_id)
-    print(rows_to_insert)
-    errors = client.insert_rows_json(table_id, rows_to_insert)
-    if errors == []:
-        print("New rows have been added.")
-    else:
-        print("Encountered errors while inserting rows: {}".format(errors))
+    # Shutdown background threads and close the streaming connection.
+    append_rows_stream.close()
+
+    # A PENDING type stream must be "finalized" before being committed. No new
+    # records can be written to the stream after this method has been called.
+    write_client.finalize_write_stream(name=write_stream.name)
+
+    # Commit the stream you created earlier.
+    batch_commit_write_streams_request = types.BatchCommitWriteStreamsRequest()
+    batch_commit_write_streams_request.parent = parent
+    batch_commit_write_streams_request.write_streams = [write_stream.name]
+    write_client.batch_commit_write_streams(batch_commit_write_streams_request)
+
+    print(f"Writes to stream: '{write_stream.name}' have been committed.")
 
 def save_to_bq(token):
-    for metric, query in config.MQL_QUERYS.items():
+    for metric, query in config.MQL_QUERY.items():
         pageToken = ""
         while (True):
             result = get_mql_result(token, query, pageToken)
             if result.get("timeSeriesDescriptor"):
                 row = build_rows(metric, result)
-                write_to_bigquery(row)
-
+                print(f"processing metric {metric} with {len(row)} rows")
+                append_rows_proto(row)
             pageToken = result.get("nextPageToken")
             if not pageToken:
                 print("No more data retrieved")
                 break
-
+    create_recommenation_table()
+                
 def export_metric_data(event, context):
     """Background Cloud Function to be triggered by Pub/Sub.
     Args:
@@ -242,31 +200,42 @@ def export_metric_data(event, context):
          metadata. The `event_id` field contains the Pub/Sub message ID. The
          `timestamp` field contains the publish time.
     """
+    print("""This Function was triggered by messageId {} published at {}
+    """.format(context.event_id, context.timestamp))
     
     token = get_access_token_from_meta_data()
     save_to_bq(token)
-
-def create_recommenation_table(token):
+def purge_raw_metric_data():
+    client = bigquery.Client()
+        
+    metric_table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.BIGQUERY_TABLE}'
+    purge_raw_metric_query_job=client.query(
+        f"""DELETE {metric_table_id} WHERE TRUE
+        """
+    )
+    purge_raw_metric_query_job.result()
+    print("Raw metric data pruged from  {}".format(metric_table_id))
+    
+def create_recommenation_table():
     """ Create recommenations table in BigQuery
     """
-    logging.debug("write_to_bigquery")
     client = bigquery.Client()
-
-    table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.recommendations'
     
-    job_config = bigquery.QueryJobConfig(destination=table_id)
-
+    table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.RECOMMENDATION_TABLE}'
+    
     with open('./recommendation.sql','r') as file:
         sql = file.read()
-
-    # Start the query, passing in the extra configuration.
-    query_job = client.query(sql, job_config=job_config)  # Make an API request.
-    query_job.result()  # Wait for the job to complete.
-
     print("Query results loaded to the table {}".format(table_id))
-
+    
+    # Start the query, passing in the recommendation query.
+    query_job = client.query(sql)  # Make an API request.
+    query_job.result()  # Wait for the job to complete.
+    
 
 if __name__ == "__main__":
+    purge_raw_metric_data()
     token = get_access_token_from_gcloud()
     save_to_bq(token)
-    create_recommenation_table(token)
+    
+    
+  

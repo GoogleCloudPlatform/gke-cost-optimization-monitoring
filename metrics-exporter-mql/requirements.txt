@@ -1,3 +1,4 @@
+functions-framework==3.*
 cachetools
 certifi
 cffi
@@ -5,10 +6,10 @@ chardet
 google-api-core
 google-auth
 google-cloud-bigquery
+google-cloud-monitoring
 google-cloud-core
 google-crc32c
 google-resumable-media
-googleapis-common-protos
 idna
 protobuf
 pyasn1
