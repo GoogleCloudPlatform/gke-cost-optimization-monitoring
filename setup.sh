@@ -8,7 +8,6 @@ gcloud services enable \
     cloudbuild.googleapis.com
 
 
-
 echo "Configuring region and zone"
 
 gcloud config set compute/region $REGION

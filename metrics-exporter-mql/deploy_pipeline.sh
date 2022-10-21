@@ -13,10 +13,6 @@ bq mk $BIGQUERY_DATASET
 bq mk --table ${BIGQUERY_DATASET}.${BIGQUERY_MQL_TABLE}  bigquery_schema.json
 bq mk --table ${BIGQUERY_DATASET}.${BIGQUERY_VPA_RECOMMENDATION_TABLE} bigquery_recommendation_schema.json
 
-echo "Creating a service account for the export Cloud Function"
-gcloud iam service-accounts create mql-export-metrics \
---display-name "MQL export metrics SA" \
---description "Used for the function that export monitoring metrics"
 
 echo "Assigning IAM roles to the service account..."
 gcloud projects add-iam-policy-binding  $PROJECT_ID --member="serviceAccount:$EXPORT_METRIC_SERVICE_ACCOUNT" --role="roles/monitoring.viewer"
