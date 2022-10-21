@@ -3,15 +3,11 @@ echo "Setup starting, enable services please wait..."
 gcloud services enable \
     compute.googleapis.com \
     container.googleapis.com \
-<<<<<<< HEAD
     monitoring.googleapis.com \
     artifactregistry.googleapis.com \
     cloudbuild.googleapis.com
 
 
-=======
-    monitoring.googleapis.com
->>>>>>> 938fb01d8d2349582a5e0be67fabf1e9f313ef40
 
 echo "Configuring region and zone"
 
