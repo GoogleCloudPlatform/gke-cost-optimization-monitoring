@@ -158,7 +158,7 @@ def append_rows_proto(rows):
 
     response_future_1 = append_rows_stream.send(request)
 
-    print(response_future_1)
+    print(response_future_1._result)
 
     # Shutdown background threads and close the streaming connection.
     append_rows_stream.close()
@@ -188,7 +188,7 @@ def save_to_bq(token):
             if not pageToken:
                 print("No more data retrieved")
                 break
-    create_recommenation_table()
+    build_recommenation_table()
                 
 def export_metric_data(event, context):
     """Background Cloud Function to be triggered by Pub/Sub.
@@ -214,15 +214,21 @@ def purge_raw_metric_data():
         """
     )
     purge_raw_metric_query_job.result()
-    print("Raw metric data pruged from  {}".format(metric_table_id))
+    print("Raw metric data purged from  {}".format(metric_table_id))
     
-def create_recommenation_table():
+def build_recommenation_table():
     """ Create recommenations table in BigQuery
     """
     client = bigquery.Client()
     
     table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.RECOMMENDATION_TABLE}'
-    
+    update_query = f"""UPDATE {table_id}
+        SET latest = FALSE
+        WHERE latest = TRUE
+    """
+    query_job = client.query(update_query)
+    query_job.result()
+
     with open('./recommendation.sql','r') as file:
         sql = file.read()
     print("Query results loaded to the table {}".format(table_id))

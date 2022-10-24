@@ -1,17 +1,19 @@
 
-echo "Setup starting, enable services necessary to run the pipeline. Please wait..."
+echo "Create a service account to run the pipeline"
+gcloud iam service-accounts create mql-export-metrics \
+--display-name "MQL export metrics SA" \
+--description "Used for the function that export monitoring metrics"
 
+echo "Setup starting, enable services necessary to run the pipeline. Please wait..."
 gcloud services enable \
 cloudfunctions.googleapis.com \
 cloudbuild.googleapis.com \
 cloudscheduler.googleapis.com
 
-envsubst < recommendation-template.sql> recommendation.sql
-envsubst < config-template.py > config.py
 
-bq mk $BIGQUERY_DATASET
+envsubst < config-template.py > config.py
+echo "Create VPA container recommendation table"
 bq mk --table ${BIGQUERY_DATASET}.${BIGQUERY_MQL_TABLE}  bigquery_schema.json
-bq mk --table ${BIGQUERY_DATASET}.${BIGQUERY_VPA_RECOMMENDATION_TABLE} bigquery_recommendation_schema.json
 
 
 echo "Assigning IAM roles to the service account..."
@@ -29,6 +31,7 @@ gcloud functions deploy mql-export-metric \
 --region $REGION \
 --trigger-topic $PUBSUB_TOPIC \
 --runtime python39 \
+--memory 512MB \
 --entry-point export_metric_data \
 --set-env-vars PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python \
 --service-account=$EXPORT_METRIC_SERVICE_ACCOUNT

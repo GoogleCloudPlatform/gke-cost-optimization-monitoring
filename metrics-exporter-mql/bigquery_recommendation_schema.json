@@ -129,6 +129,12 @@
         "name": "priority",
         "mode": "NULLABLE",
         "type": "INTEGER"
+    },
+    {
+        "name": "latest",
+        "mode": "NULLABLE",
+        "type": "BOOL"
     }
+
   ]
   

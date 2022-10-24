@@ -42,7 +42,8 @@ priority,
 mem_provision_status,
 mem_provision_risk,
 cpu_provision_status,
-cpu_provision_risk
+cpu_provision_risk,
+latest
 )
 WITH
   hpa_workloads AS (
@@ -198,6 +199,7 @@ END
   "ok"
 END
   AS cpu_provision_risk,
+TRUE as latest
 FROM
   recommendation_with_qos
 ORDER BY

@@ -1,3 +1,6 @@
 k8s/*.yaml
 monitoring/dashboards/*.yaml
 monitoring/policies/*.yaml
+/metrics-exporter-mql/config.py
+/metrics-exporter-mql/recommendation.sql
+__pycache__
