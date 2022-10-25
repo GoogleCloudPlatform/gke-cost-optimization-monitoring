@@ -1,90 +1,42 @@
 [
     {
-      "name": "timeSeriesDescriptor",
-      "type": "RECORD",
-      "mode": "REQUIRED",
-      "fields": [
-        {
-          "name": "container_name",
-          "type": "STRING",
-          "mode": "NULLABLE"
-        },
-        {
-          "name": "project_id",
-          "type": "STRING",
-          "mode": "NULLABLE"
-        },
-        {
-          "name": "location",
-          "type": "STRING",
-          "mode": "NULLABLE"
-        },
-        {
-          "name": "cluster_name",
-          "type": "STRING",
-          "mode": "NULLABLE"
-        },
-        {
-          "name": "namespace_name",
-          "type": "STRING",
-          "mode": "NULLABLE"
-        },
-        {
-          "name": "controller_name",
-          "type": "STRING",
-          "mode": "NULLABLE"
-        },
-        {
-          "name": "controller_type",
-          "type": "STRING",
-          "mode": "NULLABLE"
-        }
-      ]
-    },
-    {
-      "name": "pointData",
-      "type": "RECORD",
-      "mode": "NULLABLE",
-      "fields": [
-        {
-          "name": "timeInterval",
-          "type": "RECORD",
-          "mode": "NULLABLE",
-          "fields": [
-            {
-              "name": "start_time",
-              "type": "TIMESTAMP",
-              "mode": "NULLABLE"
-            },
-            {
-              "name": "end_time",
-              "type": "TIMESTAMP",
-              "mode": "NULLABLE"
-            }
-          ]
-        },
-        {
-          "name": "values",
-          "type": "RECORD",
-          "mode": "NULLABLE",
-          "fields": [
-            {
-              "name": "int64Value",
-              "type": "INTEGER",
-              "mode": "NULLABLE"
-            },
-            {
-              "name": "doubleValue",
-              "type": "FLOAT",
-              "mode": "NULLABLE"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "metricName",
+      "name": "metric_name",
       "type": "STRING",
-      "mode": "REQUIRED"
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "location",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "project_id",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "cluster_name",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "controller_name",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "controller_type",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "namespace_name",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "points",
+      "type": "INTEGER",
+      "mode": "NULLABLE"
     }
   ]

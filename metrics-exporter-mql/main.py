@@ -11,114 +11,161 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import io
-import base64
-import re
-import logging
-import json
+import time
 import config
-import requests
-import subprocess
-from datetime import date
+import logging
+import numpy as np
 from google.cloud import bigquery
 from google.cloud import bigquery_storage_v1
 from google.cloud.bigquery_storage_v1 import types
 from google.cloud.bigquery_storage_v1 import writer
 from google.protobuf import descriptor_pb2
-import metric_record_pb2
-from google.protobuf.json_format import Parse, ParseDict
+import metric_record_flat_pb2
+
 # If you update the metric_record.proto protocol buffer definition, run:
 #
-#   protoc --python_out=. metric_record.proto
+#   protoc --python_out=. metric_record_flat.proto
 #
 # from the samples/snippets directory to generate the metric_record_pb2.py module.
-token = None
-DISTRIBUTION = "DISTRIBUTION"
 
-METADATA_URL = "http://metadata.google.internal/computeMetadata/v1/"
-METADATA_HEADERS = {"Metadata-Flavor": "Google"}
-SERVICE_ACCOUNT = "default"
+# Fetch GKE metrics - cpu requested cores, cpu limit cores, memory requested bytes, memory limit bytes, count and all workloads with hpa
+def get_gke_metrics(metric_name, metric, window):
+    # [START get_gke_metrics]
+    from google.cloud import monitoring_v3
 
+    client = monitoring_v3.MetricServiceClient()
+    project_name = f"projects/{config.PROJECT_ID}"
 
-def get_access_token_from_meta_data():
-    url = '{}instance/service-accounts/{}/token'.format(
-        METADATA_URL, SERVICE_ACCOUNT)
-
-    # Request an access token from the metadata server.
-    r = requests.get(url, headers=METADATA_HEADERS)
-    r.raise_for_status()
-
-    # Extract the access token from the response.
-    token = r.json()['access_token']
-    return token
-
-
-def get_access_token_from_gcloud(force=False):
-    global token
-    if token is None or force:
-        token = subprocess.check_output(
-            ["/usr/bin/gcloud", "auth", "application-default", "print-access-token"],
-            text=True,
-        ).rstrip()
-    return token
-
-
-def get_mql_result(token, query, pageToken):
-    q = f'{{"query":"{query}", "pageToken":"{pageToken}"}}' if pageToken else f'{{"query": "{query}"}}'
-
-    headers = {"Content-Type": "application/json",
-               "Authorization": f"Bearer {token}"}
-    return requests.post(config.QUERY_URL, data=q, headers=headers).json()
-
-
-def build_rows(metric, data):
-    """ Build a list of JSON object rows to insert into BigQuery
-        This function may fan out the input by writing 1 entry into BigQuery for every point,
-        if there is more than 1 point in the timeseries
-    """
-    logging.debug("build_row")
-    rows = []
-
-    labelDescriptors = data["timeSeriesDescriptor"]["labelDescriptors"]
-
-    for timeseries in data["timeSeriesData"]:
-        labelValues = timeseries["labelValues"]
-        pointData = timeseries["pointData"]
-        details = {}
-        for idx in range(len(labelDescriptors)):
-            if labelDescriptors[idx]["key"] == "resource.project_id":
-                details["project_id"] = labelValues[idx]["stringValue"]
+    now = time.time()
+    seconds = int(now)
+    nanos = int((now - seconds) * 10 ** 9)
+    gke_group_by_fields = [ 'resource.label."location"','resource.label."project_id"','resource.label."cluster_name"','resource.label."controller_name"','resource.label."namespace_name"','metadata.system_labels."top_level_controller_name"','metadata.system_labels."top_level_controller_type"']
+    hpa_group_by_fields = ['resource.label."location"','resource.label."project_id"','resource.label."cluster_name"','resource.label."namespace_name"','metric.label."targetref_kind"','metric.label."targetref_name"']
+    
+    interval = monitoring_v3.TimeInterval(
+        {
+            "end_time": {"seconds": seconds, "nanos": nanos},
+            "start_time": {"seconds": (seconds - window), "nanos": nanos},
+        }
+    )
+    aggregation = monitoring_v3.Aggregation(
+        {
+            "alignment_period": {"seconds": window},  
+            "per_series_aligner": monitoring_v3.Aggregation.Aligner.ALIGN_MAX,
+            "cross_series_reducer": monitoring_v3.Aggregation.Reducer.REDUCE_COUNT if metric_name == "count" else monitoring_v3.Aggregation.Reducer.REDUCE_MAX ,
+            "group_by_fields": gke_group_by_fields if "hpa" not in metric_name else hpa_group_by_fields,
+        }
+    )
+    results = client.list_time_series(
+        request={
+            "name": project_name,
+            "filter": f'metric.type = "{metric}" AND resource.label.namespace_name != "kube-system"',
+            "interval": interval,
+            "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
+            "aggregation": aggregation,
+        }
+    )
+    output = []
+    for result in results:
+        row = metric_record_flat_pb2.MetricFlatRecord ()
+        label = result.resource.labels
+        metadata = result.metadata.system_labels.fields
+        metricdata = result.metric.labels
+        row.metric_name = metric_name
+        row.location = label['location']
+        row.project_id = label['project_id']
+        row.cluster_name = label['cluster_name']
+        row.controller_name =  metricdata['targetref_name'] if "hpa" in metric_name else metadata['top_level_controller_name'].string_value 
+        row.controller_type= metricdata['targetref_kind'] if "hpa" in metric_name else metadata['top_level_controller_type'].string_value
+        row.namespace_name = label['namespace_name']
+        points = result.points
+        for point in points:
+            if "cpu" in metric_name:
+                row.points = (int(point.value.double_value * 1000))
+                
+            elif "memory" in metric_name:
+                row.points = (int(point.value.int64_value/1024/1024))
+                
             else:
-                details[labelDescriptors[idx]["key"]] = labelValues[idx]["stringValue"]
-        row = { "timeSeriesDescriptor": (details)}
-        if "hpa" not in metric:
-            interval = {
-                    "start_time": pointData[0]["timeInterval"]["startTime"],
-                    "end_time": pointData[0]["timeInterval"]["endTime"]
-                }
-            point = {
-                    "timeInterval": interval,
-                    "values": pointData[0]["values"][0],
-            }
-            row["pointData"] = point
-        row["metricName"] = metric
-        rows.append(row)
-    return rows
+                row.points = (point.value.int64_value)
+            break
+        output.append(row.SerializeToString())
+    return output
 
-def create_row_data(row):
-    m = Parse(json.dumps(row), metric_record_pb2.MetricRecord()) 
-    return m.SerializeToString()
+    # [END gke_get_metrics]
 
+# Build VPA recommendations, memory: get max value over 30 days, cpu: get max and 95th percentile
+def get_vpa_recommenation_metrics(metric_name, metric, window):
+
+    # [START get_vpa_recommenation_metrics]
+    from google.cloud import monitoring_v3
+    client = monitoring_v3.MetricServiceClient()
+    project_name = f"projects/{config.PROJECT_ID}"
+    interval = monitoring_v3.TimeInterval()
+
+    now = time.time()
+    seconds = int(now)
+    nanos = int((now - seconds) * 10 ** 9)
+    
+    interval = monitoring_v3.TimeInterval(
+        {
+            "end_time": {"seconds": seconds, "nanos": nanos},
+            "start_time": {"seconds": (seconds - window), "nanos": nanos},
+        }
+    )
+    
+    results = client.list_time_series(
+        request={
+            "name": project_name,
+            "filter": f'metric.type = "{metric}" AND resource.label.namespace_name != "kube-system"',
+            "interval": interval,
+            "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
+       
+        }
+    )
+    output = []
+    points_array = []
+    for result in results:
+        row = metric_record_flat_pb2.MetricFlatRecord ()
+        label = result.resource.labels
+        row.location = label['location']
+        row.project_id = label['project_id']
+        row.cluster_name = label['cluster_name']
+        row.controller_name = label['controller_name']
+        row.controller_type= label['controller_kind']
+        row.namespace_name = label['namespace_name']
+        for point in result.points:
+            if((point.value.double_value) != 0):
+                points_array.append(int(point.value.double_value * 1000))
+            else:
+                points_array.append(int(point.value.int64_value/1024/1024)) 
+        if "cpu" in metric_name :
+            row.metric_name = "cpu_request_95th_percentile_recommendations"
+            row.points = int(np.percentile(points_array, 95))
+            output.append(row.SerializeToString())
+            row.metric_name = "cpu_request_max_recommendations"
+            row.points = (max(points_array))
+            output.append(row.SerializeToString())
+        else:
+            row.metric_name = metric_name
+            row.points = (max(points_array))
+            output.append(row.SerializeToString())
+    return output
+    # [END get_vpa_recommenation_metrics]   
+ 
+
+# Write rows to BigQuery    
 def append_rows_proto(rows):
+
     """Create a write stream, write some sample data, and commit the stream."""
     write_client = bigquery_storage_v1.BigQueryWriteClient()
     parent = write_client.table_path(config.PROJECT_ID, config.BIGQUERY_DATASET, config.BIGQUERY_TABLE)
     write_stream = types.WriteStream()
-
+    
     # When creating the stream, choose the type. Use the PENDING type to wait
     # until the stream is committed before it is visible. See:
     # https://cloud.google.com/bigquery/docs/reference/storage/rpc/google.cloud.bigquery.storage.v1#google.cloud.bigquery.storage.v1.WriteStream.Type
-    write_stream.type_ = types.WriteStream.Type.PENDING
+    write_stream.type_ = types.WriteStream.Type.COMMITTED
     write_stream = write_client.create_write_stream(
         parent=parent, write_stream=write_stream
     )
@@ -134,12 +181,12 @@ def append_rows_proto(rows):
     # protocol buffer representation of your message descriptor.
     proto_schema = types.ProtoSchema()
     proto_descriptor = descriptor_pb2.DescriptorProto()
-    metric_record_pb2.MetricRecord.DESCRIPTOR.CopyToProto(proto_descriptor)
+    metric_record_flat_pb2.MetricFlatRecord.DESCRIPTOR.CopyToProto(proto_descriptor)
     proto_schema.proto_descriptor = proto_descriptor
     proto_data = types.AppendRowsRequest.ProtoData()
     proto_data.writer_schema = proto_schema
     request_template.proto_rows = proto_data
-
+    
     # Some stream types support an unbounded number of requests. Construct an
     # AppendRowsStream to send an arbitrary number of requests to a stream.
     append_rows_stream = writer.AppendRowsStream(write_client, request_template)
@@ -148,17 +195,14 @@ def append_rows_proto(rows):
     # serialized_rows repeated field.
     proto_rows = types.ProtoRows()
     for row in rows:
-        proto_rows.serialized_rows.append(create_row_data(row))
-    
+        proto_rows.serialized_rows.append(row)
     request = types.AppendRowsRequest()
     request.offset = 0
     proto_data = types.AppendRowsRequest.ProtoData()
     proto_data.rows = proto_rows
     request.proto_rows = proto_data
 
-    response_future_1 = append_rows_stream.send(request)
-
-    print(response_future_1._result)
+    append_rows_stream.send(request)
 
     # Shutdown background threads and close the streaming connection.
     append_rows_stream.close()
@@ -175,36 +219,7 @@ def append_rows_proto(rows):
 
     print(f"Writes to stream: '{write_stream.name}' have been committed.")
 
-def save_to_bq(token):
-    for metric, query in config.MQL_QUERY.items():
-        pageToken = ""
-        while (True):
-            result = get_mql_result(token, query, pageToken)
-            if result.get("timeSeriesDescriptor"):
-                row = build_rows(metric, result)
-                print(f"processing metric {metric} with {len(row)} rows")
-                append_rows_proto(row)
-            pageToken = result.get("nextPageToken")
-            if not pageToken:
-                print("No more data retrieved")
-                break
-    build_recommenation_table()
-                
-def export_metric_data(event, context):
-    """Background Cloud Function to be triggered by Pub/Sub.
-    Args:
-         event (dict):  The dictionary with data specific to this type of
-         event. The `data` field contains the PubsubMessage message. The
-         `attributes` field will contain custom attributes if there are any.
-         context (google.cloud.functions.Context): The Cloud Functions event
-         metadata. The `event_id` field contains the Pub/Sub message ID. The
-         `timestamp` field contains the publish time.
-    """
-    print("""This Function was triggered by messageId {} published at {}
-    """.format(context.event_id, context.timestamp))
-    
-    token = get_access_token_from_meta_data()
-    save_to_bq(token)
+# Purge all data from metrics table. mql_metrics table is used as a staging table and must be purged to avoid duplicate metrics                
 def purge_raw_metric_data():
     client = bigquery.Client()
         
@@ -215,7 +230,8 @@ def purge_raw_metric_data():
     )
     purge_raw_metric_query_job.result()
     print("Raw metric data purged from  {}".format(metric_table_id))
-    
+
+# Use recommendation.sql to build vpa container recommendations    
 def build_recommenation_table():
     """ Create recommenations table in BigQuery
     """
@@ -240,8 +256,17 @@ def build_recommenation_table():
 
 if __name__ == "__main__":
     purge_raw_metric_data()
-    token = get_access_token_from_gcloud()
-    save_to_bq(token)
+    for metric, query in config.MQL_QUERY.items():
+        if query[2] == "gke_metric":
+            append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
+        else:
+            append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
+         
+
+   
+    
+        
+
     
     
   

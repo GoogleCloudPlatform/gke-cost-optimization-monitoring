@@ -17,155 +17,30 @@ PUBSUB_TOPIC = "${PUBSUB_TOPIC}"
 BIGQUERY_DATASET = "${BIGQUERY_DATASET}"
 BIGQUERY_TABLE = "${BIGQUERY_MQL_TABLE}"
 RECOMMENDATION_TABLE = "${BIGQUERY_VPA_RECOMMENDATION_TABLE}"
-WITHIN_QUERY = "1h"
-POINTS_EVERY = "15m"
-RECOMMENDATION_POINTS_EVERY = "15m"
-RECOMMENDATION_WINDOW = "15d"
+RECOMMENDATION_WINDOW_SECONDS = 2592000
+LATEST_WINDOW_SECONDS = 60
+
 # IMPORTANT: to guarantee successfully retriving data, please use a time window greater than 5 minutes
 
 MQL_QUERY = {
-    "count":
-    f"""
-fetch k8s_container::kubernetes.io/container/cpu/request_cores
-  | filter
-    (metadata.system_labels.top_level_controller_type != 'DaemonSet')
-    && (resource.namespace_name != 'kube-system') 
-  | every 1d
-| group_by 
-    [container_name: resource.container_name, 
-    resource.project_id, 
-    location: resource.location, 
-    cluster_name: resource.cluster_name,
-    namespace_name: resource.namespace_name, 
-       controller_name: metadata.system_labels.top_level_controller_name,
-       controller_type: metadata.system_labels.top_level_controller_type],[row_count: row_count()]
-| within {WITHIN_QUERY}
-""",
-    # CPU Metrics
-    "cpu_request_cores":
-    f"""
-fetch k8s_container::kubernetes.io/container/cpu/request_cores
-  | filter
-    (metadata.system_labels.top_level_controller_type != 'DaemonSet')
-    && (resource.namespace_name != 'kube-system') 
+    "count" :["kubernetes.io/container/cpu/request_cores", LATEST_WINDOW_SECONDS, "gke_metric"]
+,
+    "cpu_requested_cores" :["kubernetes.io/container/cpu/request_cores", LATEST_WINDOW_SECONDS, "gke_metric"]
+,
+    "cpu_limit_cores": ["kubernetes.io/container/cpu/limit_cores", LATEST_WINDOW_SECONDS, "gke_metric"]
+,
+    "memory_requested_bytes":["kubernetes.io/container/memory/request_bytes", LATEST_WINDOW_SECONDS, "gke_metric"]
+,
+    "memory_limit_bytes":["kubernetes.io/container/memory/limit_bytes", LATEST_WINDOW_SECONDS, "gke_metric"]
+,
+    "memory_request_recommendations": ["kubernetes.io/autoscaler/container/memory/per_replica_recommended_request_bytes", RECOMMENDATION_WINDOW_SECONDS, "vpa_metric"]
+,
+    "cpu_request_recommendations": ["kubernetes.io/autoscaler/container/cpu/per_replica_recommended_request_cores", RECOMMENDATION_WINDOW_SECONDS, "vpa_metric"]
+,
+    "hpa_cpu":["custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization", LATEST_WINDOW_SECONDS, "gke_metric"]
+,
+    "hpa_memory":["custom.googleapis.com/podautoscaler/hpa/memory/target_utilization", LATEST_WINDOW_SECONDS, "gke_metric"]
 
-  | every {POINTS_EVERY}
-| group_by 
-    [container_name: resource.container_name, 
-    resource.project_id, 
-    location: resource.location, 
-    cluster_name: resource.cluster_name,
-    namespace_name: resource.namespace_name, 
-       controller_name: metadata.system_labels.top_level_controller_name,
-       controller_type: metadata.system_labels.top_level_controller_type]
-| within {WITHIN_QUERY}
-""",
-    "cpu_limit_cores":
-    f"""
-fetch k8s_container::kubernetes.io/container/cpu/limit_cores
-| filter
-    (metadata.system_labels.top_level_controller_type != 'DaemonSet')
-    && (resource.namespace_name != 'kube-system')
-| every {POINTS_EVERY}
-| group_by 
-        [container_name: resource.container_name, 
-    resource.project_id, 
-    location: resource.location, 
-    cluster_name: resource.cluster_name,
-    namespace_name: resource.namespace_name, 
-       controller_name: metadata.system_labels.top_level_controller_name,
-       controller_type: metadata.system_labels.top_level_controller_type]
-| within {WITHIN_QUERY}
-""",
-    # Memory metrics
-    "memory_request_bytes":
-    f"""
-    fetch k8s_container::kubernetes.io/container/memory/request_bytes
-    | filter
-        (metadata.system_labels.top_level_controller_type != 'DaemonSet')
-        && (resource.namespace_name != 'kube-system')
-    | every {POINTS_EVERY}
-    | group_by [container_name: resource.container_name, 
-        resource.project_id, 
-        location: resource.location, 
-        cluster_name: resource.cluster_name,
-        namespace_name: resource.namespace_name, 
-        controller_name: metadata.system_labels.top_level_controller_name,
-        controller_type: metadata.system_labels.top_level_controller_type]
-    | within {WITHIN_QUERY}
-    """,
-    "memory_limit_bytes":
-    f"""
-fetch k8s_container::kubernetes.io/container/memory/limit_bytes
-| filter
-    (metadata.system_labels.top_level_controller_type != 'DaemonSet')
-    && (resource.namespace_name != 'kube-system')
-| every {POINTS_EVERY}
-| group_by [container_name: resource.container_name, 
-    resource.project_id, 
-    location: resource.location, 
-    cluster_name: resource.cluster_name,
-    namespace_name: resource.namespace_name, 
-       controller_name: metadata.system_labels.top_level_controller_name,
-       controller_type: metadata.system_labels.top_level_controller_type]
-| within {WITHIN_QUERY}
-""",
-    "memory_request_recommendations":
-    f"""
-fetch k8s_scale :: kubernetes.io/autoscaler/container/memory/per_replica_recommended_request_bytes
-| every {RECOMMENDATION_POINTS_EVERY}
-| group_by  
-      [container_name: metric.container_name, 
-      resource.project_id, 
-    location: resource.location, 
-    cluster_name: resource.cluster_name,
-    namespace_name: resource.namespace_name, 
-       controller_type: resource.controller_kind, controller_name: resource.controller_name]
-| within {RECOMMENDATION_WINDOW}
-""",
-    "cpu_request_recommendation":
-    f"""
-fetch k8s_scale :: kubernetes.io/autoscaler/container/cpu/per_replica_recommended_request_cores
-| every {RECOMMENDATION_POINTS_EVERY}
-| group_by
-    [container_name: metric.container_name, 
-    resource.project_id, 
-    location: resource.location, 
-    cluster_name: resource.cluster_name,
-    namespace_name: resource.namespace_name, 
-       controller_type: resource.controller_kind, 
-       controller_name: resource.controller_name]
-| within {RECOMMENDATION_WINDOW}
-""",
-    # HPA workloads
-    "hpa_cpu":
-    f"""
- fetch k8s_pod :: custom.googleapis.com/podautoscaler/hpa/cpu/target_utilization
-   | every 1d
-      | group_by
-      [container_name: resource.pod_name, 
-    resource.project_id, 
-    location: resource.location, 
-    cluster_name: resource.cluster_name,
-    namespace_name: resource.namespace_name, 
-       controller_type: metric.targetref_kind, 
-       controller_name: metric.targetref_name]
-| within {WITHIN_QUERY}
-""",
-    "hpa_memory":
-    f"""
-fetch k8s_pod :: custom.googleapis.com/podautoscaler/hpa/memory/target_utilization
-      | every 1d
-      | group_by
-          [container_name: resource.pod_name, 
-    resource.project_id, 
-    location: resource.location, 
-    cluster_name: resource.cluster_name,
-    namespace_name: resource.namespace_name, 
-       controller_type: metric.targetref_kind, 
-       controller_name: metric.targetref_name]
-| within {WITHIN_QUERY}
-"""
 }
 
 BASE_URL = "https://monitoring.googleapis.com/v3/projects"
