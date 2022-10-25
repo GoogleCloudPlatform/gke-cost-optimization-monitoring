@@ -20,24 +20,23 @@ INTO
 recommendation_timestamp,			
 location,
 project_id,
-cluster_name,							
-controller_type,			
-controller_name,
-container,			
-namespace,			
-container_count,						
-mem_requested,			
-mem_limit,								
-cpu_requested,			
-cpu_limit,
+cluster_name,
+controller_name,							
+controller_type,						
+namespace_name,			
+container_count,
+cpu_limit_cores,
+cpu_requested_cores,	
+memory_limit_bytes,					
+memory_requested_bytes,			
+memory_request_max_recommendations,								
 mem_qos,
 cpu_qos,
-recommendation_mem_request,
-recommendation_mem_limit,			
-recommendation_cpu_request,
-recommendation_cpu_limit,		
+memory_limit_recommendations,
+cpu_request_recommendations,
+cpu_limit_recommendations,
+cpu_delta,
 mem_delta,
-cpu_delta,			
 priority,	
 mem_provision_status,
 mem_provision_risk,
@@ -64,7 +63,8 @@ WITH hpa_workloads AS (
 # Filter out HPA workloads
 ##############################
 workloads_without_hpa AS (
-SELECT  
+SELECT 
+CURRENT_TIMESTAMP() AS recommendation_timestamp, 
 c.location,
 c.project_id, 
 c.cluster_name,
@@ -72,14 +72,14 @@ c.controller_name,
 c.controller_type,
 c.namespace_name,
 hpa_workloads.flag,
-(MAX(IF(metric_name = "count", points, NULL))) AS container_count,
-(MAX(IF(metric_name = "cpu_limit_cores", points, NULL))) AS cpu_limit_cores,
-(MAX(IF(metric_name = "cpu_requested_cores", points, NULL))) AS cpu_requested_cores,
-(MAX(IF(metric_name = "memory_limit_bytes", points, NULL))) AS memory_limit_bytes,
-(MAX(IF(metric_name = "memory_requested_bytes", points, NULL))) AS memory_requested_bytes,
-(MAX(IF(metric_name = "cpu_request_95th_percentile_recommendations", points, NULL))) AS cpu_request_95th_percentile_recommendations,
-(MAX(IF(metric_name = "cpu_request_max_recommendations", points, NULL))) AS cpu_request_max_recommendations,
-(MAX(IF(metric_name = "memory_request_max_recommendations", points, NULL))) AS memory_request_max_recommendations
+(MAX(IF(metric_name = "count", points, 0))) AS container_count,
+(MAX(IF(metric_name = "cpu_limit_cores", points, 0))) AS cpu_limit_cores,
+(MAX(IF(metric_name = "cpu_requested_cores", points, 0))) AS cpu_requested_cores,
+(MAX(IF(metric_name = "memory_limit_bytes", points, 0))) AS memory_limit_bytes,
+(MAX(IF(metric_name = "memory_requested_bytes", points, 0))) AS memory_requested_bytes,
+(MAX(IF(metric_name = "cpu_request_95th_percentile_recommendations", points, 0))) AS cpu_request_95th_percentile_recommendations,
+(MAX(IF(metric_name = "cpu_request_max_recommendations", points, 0))) AS cpu_request_max_recommendations,
+(MAX(IF(metric_name = "memory_request_recommendations", points, 0))) AS memory_request_max_recommendations
 FROM `${PROJECT_ID}.${BIGQUERY_DATASET}.${BIGQUERY_MQL_TABLE}` c
  LEFT JOIN
     hpa_workloads
@@ -90,7 +90,7 @@ FROM `${PROJECT_ID}.${BIGQUERY_DATASET}.${BIGQUERY_MQL_TABLE}` c
     AND c.cluster_name = hpa_workloads.cluster_name
   WHERE
    hpa_workloads.flag IS NULL
-GROUP BY 1,2,3,4,5,6,7),
+GROUP BY 1,2,3,4,5,6,7,8),
 ###############################
 # Recommendations with QoS
 ##############################
@@ -98,7 +98,7 @@ GROUP BY 1,2,3,4,5,6,7),
   SELECT
     * EXCEPT (flag),
     CASE
-      WHEN (memory_requested_bytes + memory_limit_bytes) = 0 THEN 'BestEffort'
+      WHEN (memory_requested_bytes  + memory_limit_bytes) = 0 THEN 'BestEffort'
       WHEN (memory_requested_bytes = memory_limit_bytes)
     AND (memory_requested_bytes> 0) THEN 'Guaranteed'
     ELSE
@@ -117,21 +117,31 @@ GROUP BY 1,2,3,4,5,6,7),
     workloads_without_hpa
   WHERE
     memory_request_max_recommendations IS NOT NULL
-    AND (cpu_request_max_recommendations IS NOT NULL OR cpu_request_95th_percentile_recommendations IS NOT NULL )),
+    AND (cpu_request_max_recommendations IS NOT NULL OR cpu_request_95th_percentile_recommendations IS NOT NULL )
+    ),
 ##############################################################
 # Use QoS to determine the CPU recommendations
 ##############################################################
 recommendation AS (
 SELECT * EXCEPT (cpu_request_95th_percentile_recommendations, cpu_request_max_recommendations),
-IF(cpu_qos = "Guaranteed", cpu_request_max_recommendations,  cpu_request_95th_percentile_recommendations ) as cpu_request_recommendations,
+memory_request_max_recommendations AS memory_limit_recommendation,
+IF(cpu_qos = "Guaranteed", cpu_request_max_recommendations,  cpu_request_95th_percentile_recommendations )  as cpu_request_recommendations,
+CASE
+  WHEN (cpu_limit_cores = 0 or cpu_requested_cores = 0) THEN cpu_request_max_recommendations
+  WHEN (cpu_qos = "Guaranteed" ) THEN cpu_request_max_recommendations
+  ELSE
+    CAST(cpu_request_95th_percentile_recommendations * (cpu_limit_cores/cpu_requested_cores)  AS INT64)
+  END
+  AS cpu_limit_recommendation
 FROM recommendation_with_qos
-)
+),
 ##############################################################
-# Build file recommendation query with prority and advisory
+# Build final recommendation query with prority and advisory
 ##############################################################
-SELECT * ,
+final_recommendation AS (
+  SELECT * ,
 ( cpu_requested_cores - cpu_request_recommendations ) AS cpu_delta,
-( memory_requested_bytes - memory_request_max_recommendations ) AS cpu_delta,
+( memory_requested_bytes - memory_request_max_recommendations ) AS mem_delta,
 CAST(container_count * ((cpu_requested_cores - cpu_request_recommendations) + (memory_requested_bytes - memory_request_max_recommendations)/13.4) AS INT64) AS priority,
   CASE
     WHEN (memory_requested_bytes > memory_request_max_recommendations) THEN "over"
@@ -165,5 +175,8 @@ END
   "ok"
 END
   AS cpu_provision_risk,
-FROM recommendation
+TRUE as latest
+FROM recommendation)
 
+SELECT * FROM final_recommendation
+ORDER BY priority DESC

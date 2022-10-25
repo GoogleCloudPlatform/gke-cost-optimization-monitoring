@@ -30,12 +30,7 @@
         "type": "STRING"
     },
     {
-        "name": "container",
-        "mode": "NULLABLE",
-        "type": "STRING"
-    },
-    {
-      "name": "namespace",
+      "name": "namespace_name",
       "mode": "NULLABLE",
       "type": "STRING"
     },
@@ -45,14 +40,34 @@
       "type": "INTEGER"
     },
     {
-      "name": "cpu_requested",
+        "name": "cpu_limit_cores",
+        "mode": "NULLABLE",
+        "type": "INTEGER"
+    },
+    {
+      "name": "cpu_requested_cores",
       "mode": "NULLABLE",
       "type": "INTEGER"
     },
     {
-      "name": "cpu_limit",
-      "mode": "NULLABLE",
-      "type": "INTEGER"
+        "name": "memory_limit_bytes",
+        "mode": "NULLABLE",
+        "type": "INTEGER"
+    },
+    {
+        "name": "memory_requested_bytes",
+        "mode": "NULLABLE",
+        "type": "INTEGER"
+    },
+    {
+        "name": "memory_request_max_recommendations",
+        "mode": "NULLABLE",
+        "type": "INTEGER"
+    },
+    {
+        "name": "mem_qos",
+        "mode": "NULLABLE",
+        "type": "STRING"
     },
     {
         "name": "cpu_qos",
@@ -60,12 +75,17 @@
         "type": "STRING"
     },
     {
-      "name": "recommendation_cpu_request",
+        "name": "memory_limit_recommendations",
+        "mode": "NULLABLE",
+        "type": "INTEGER"
+      },
+    {
+      "name": "cpu_request_recommendations",
       "mode": "NULLABLE",
       "type": "INTEGER"
     },
     {
-        "name": "recommendation_cpu_limit",
+        "name": "cpu_limit_recommendations",
         "mode": "NULLABLE",
         "type": "INTEGER"
       },
@@ -73,6 +93,26 @@
         "name": "cpu_delta",
         "mode": "NULLABLE",
         "type": "INTEGER"
+    },
+    {
+        "name": "mem_delta",
+        "mode": "NULLABLE",
+        "type": "INTEGER"
+    },
+    {
+        "name": "priority",
+        "mode": "NULLABLE",
+        "type": "INTEGER"
+    },
+    {
+        "name": "mem_provision_status",
+        "mode": "NULLABLE",
+        "type": "STRING"
+    },
+    {
+        "name": "mem_provision_risk",
+        "mode": "NULLABLE",
+        "type": "STRING"
     },
     {
         "name": "cpu_provision_status",
@@ -85,55 +125,9 @@
         "type": "STRING"
     },
     {
-        "name": "mem_requested",
-        "mode": "NULLABLE",
-        "type": "INTEGER"
-      },
-      {
-        "name": "mem_limit",
-        "mode": "NULLABLE",
-        "type": "INTEGER"
-      },
-      {
-        "name": "mem_qos",
-        "mode": "NULLABLE",
-        "type": "STRING"
-    },
-      {
-        "name": "recommendation_mem_request",
-        "mode": "NULLABLE",
-        "type": "INTEGER"
-      },
-      {
-          "name": "recommendation_mem_limit",
-          "mode": "NULLABLE",
-          "type": "INTEGER"
-      },
-      {
-          "name": "mem_delta",
-          "mode": "NULLABLE",
-          "type": "INTEGER"
-      },
-      {
-          "name": "mem_provision_status",
-          "mode": "NULLABLE",
-          "type": "STRING"
-      },
-      {
-          "name": "mem_provision_risk",
-          "mode": "NULLABLE",
-          "type": "STRING"
-      },
-   
-    {
-        "name": "priority",
-        "mode": "NULLABLE",
-        "type": "INTEGER"
-    },
-    {
         "name": "latest",
         "mode": "NULLABLE",
-        "type": "BOOL"
+        "type": "BOOLEAN"
     }
 
   ]

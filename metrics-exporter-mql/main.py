@@ -67,6 +67,7 @@ def get_gke_metrics(metric_name, metric, window):
     )
     output = []
     for result in results:
+
         row = metric_record_flat_pb2.MetricFlatRecord ()
         label = result.resource.labels
         metadata = result.metadata.system_labels.fields
@@ -89,6 +90,7 @@ def get_gke_metrics(metric_name, metric, window):
             else:
                 row.points = (point.value.int64_value)
             break
+        print(row)
         output.append(row.SerializeToString())
     return output
 
@@ -124,8 +126,9 @@ def get_vpa_recommenation_metrics(metric_name, metric, window):
         }
     )
     output = []
-    points_array = []
+    
     for result in results:
+        points_array = []
         row = metric_record_flat_pb2.MetricFlatRecord ()
         label = result.resource.labels
         row.location = label['location']
@@ -150,6 +153,7 @@ def get_vpa_recommenation_metrics(metric_name, metric, window):
             row.metric_name = metric_name
             row.points = (max(points_array))
             output.append(row.SerializeToString())
+        print(row)
     return output
     # [END get_vpa_recommenation_metrics]   
  
@@ -228,8 +232,8 @@ def purge_raw_metric_data():
         f"""DELETE {metric_table_id} WHERE TRUE
         """
     )
-    purge_raw_metric_query_job.result()
     print("Raw metric data purged from  {}".format(metric_table_id))
+    purge_raw_metric_query_job.result()
 
 # Use recommendation.sql to build vpa container recommendations    
 def build_recommenation_table():
@@ -248,6 +252,7 @@ def build_recommenation_table():
     with open('./recommendation.sql','r') as file:
         sql = file.read()
     print("Query results loaded to the table {}".format(table_id))
+    #purge_raw_metric_data()
     
     # Start the query, passing in the recommendation query.
     query_job = client.query(sql)  # Make an API request.
@@ -255,18 +260,10 @@ def build_recommenation_table():
     
 
 if __name__ == "__main__":
-    purge_raw_metric_data()
+  
     for metric, query in config.MQL_QUERY.items():
         if query[2] == "gke_metric":
             append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
         else:
             append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
          
-
-   
-    
-        
-
-    
-    
-  
