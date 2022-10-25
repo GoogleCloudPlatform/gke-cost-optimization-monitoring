@@ -257,13 +257,32 @@ def build_recommenation_table():
     # Start the query, passing in the recommendation query.
     query_job = client.query(sql)  # Make an API request.
     query_job.result()  # Wait for the job to complete.
-    
 
-if __name__ == "__main__":
-  
+def export_metric_data(event, context):
+    """Background Cloud Function to be triggered by Pub/Sub.
+    Args:
+         event (dict):  The dictionary with data specific to this type of
+         event. The `data` field contains the PubsubMessage message. The
+         `attributes` field will contain custom attributes if there are any.
+         context (google.cloud.functions.Context): The Cloud Functions event
+         metadata. The `event_id` field contains the Pub/Sub message ID. The
+         `timestamp` field contains the publish time.
+    """
+    print("""This Function was triggered by messageId {} published at {}
+    """.format(context.event_id, context.timestamp))
+    
     for metric, query in config.MQL_QUERY.items():
         if query[2] == "gke_metric":
             append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
         else:
             append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
-         
+           
+
+if __name__ == "__main__":
+    for metric, query in config.MQL_QUERY.items():
+        if query[2] == "gke_metric":
+            append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
+        else:
+            append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
+  
+    
