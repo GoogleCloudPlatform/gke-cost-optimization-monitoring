@@ -250,12 +250,21 @@ def build_recommenation_table():
     with open('./recommendation.sql','r') as file:
         sql = file.read()
     print("Query results loaded to the table {}".format(table_id))
-    purge_raw_metric_data()
     
     # Start the query, passing in the recommendation query.
     query_job = client.query(sql)  # Make an API request.
     query_job.result()  # Wait for the job to complete.
+    purge_raw_metric_data()
 
+def run_pipeline():
+    purge_raw_metric_data()
+    for metric, query in config.MQL_QUERY.items():
+        if query[2] == "gke_metric":
+            append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
+        else:
+            append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
+    build_recommenation_table()
+    
 def export_metric_data(event, context):
     """Background Cloud Function to be triggered by Pub/Sub.
     Args:
@@ -268,20 +277,11 @@ def export_metric_data(event, context):
     """
     print("""This Function was triggered by messageId {} published at {}
     """.format(context.event_id, context.timestamp))
-    
-    for metric, query in config.MQL_QUERY.items():
-        if query[2] == "gke_metric":
-            append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
-        else:
-            append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
-    build_recommenation_table()       
+    run_pipeline()
+         
 
 if __name__ == "__main__":
-    for metric, query in config.MQL_QUERY.items():
-        if query[2] == "gke_metric":
-            append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
-        else:
-            append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
-    build_recommenation_table()
+    run_pipeline()
+
   
     
