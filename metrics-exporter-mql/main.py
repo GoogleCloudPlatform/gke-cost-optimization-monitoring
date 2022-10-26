@@ -90,7 +90,6 @@ def get_gke_metrics(metric_name, metric, window):
             else:
                 row.points = (point.value.int64_value)
             break
-        print(row)
         output.append(row.SerializeToString())
     return output
 
@@ -153,7 +152,6 @@ def get_vpa_recommenation_metrics(metric_name, metric, window):
             row.metric_name = metric_name
             row.points = (max(points_array))
             output.append(row.SerializeToString())
-        print(row)
     return output
     # [END get_vpa_recommenation_metrics]   
  
@@ -252,7 +250,7 @@ def build_recommenation_table():
     with open('./recommendation.sql','r') as file:
         sql = file.read()
     print("Query results loaded to the table {}".format(table_id))
-    #purge_raw_metric_data()
+    purge_raw_metric_data()
     
     # Start the query, passing in the recommendation query.
     query_job = client.query(sql)  # Make an API request.
@@ -276,7 +274,7 @@ def export_metric_data(event, context):
             append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
         else:
             append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
-           
+    build_recommenation_table()       
 
 if __name__ == "__main__":
     for metric, query in config.MQL_QUERY.items():
@@ -284,5 +282,6 @@ if __name__ == "__main__":
             append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
         else:
             append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
+    build_recommenation_table()
   
     

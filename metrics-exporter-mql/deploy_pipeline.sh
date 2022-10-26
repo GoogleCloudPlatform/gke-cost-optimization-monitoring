@@ -43,4 +43,6 @@ gcloud scheduler jobs create pubsub get_metric_mql \
 --location $REGION \
 --message-body "Exporting metric..."
 
+gcloud scheduler jobs run get_metric_mql --location $REGION
+
 echo "Deployment complete"
