@@ -296,8 +296,7 @@ def export_metric_data(event, context):
          
 
 if __name__ == "__main__":
-    build_recommenation_table()
-    #run_pipeline()
+    run_pipeline()
 
   
     
