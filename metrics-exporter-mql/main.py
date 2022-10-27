@@ -252,7 +252,6 @@ def build_recommenation_table():
         
         for row in results:
             metric_count=int("{}".format(row.metric_count))
-     
   
     table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.RECOMMENDATION_TABLE}'
     update_query = f"""UPDATE {table_id}
