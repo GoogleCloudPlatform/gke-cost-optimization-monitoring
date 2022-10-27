@@ -239,8 +239,21 @@ def purge_raw_metric_data():
 def build_recommenation_table():
     """ Create recommenations table in BigQuery
     """
+    metric_count = 0
     client = bigquery.Client()
+
+    metric_table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.BIGQUERY_TABLE}'
     
+    #wait until we have all metrics
+    while metric_count != 10 :
+        query_metrics = f"""SELECT COUNT(DISTINCT(metric_name)) AS metric_count FROM {metric_table_id}"""
+        query_job = client.query(query_metrics)
+        results = query_job.result()  # Waits for job to complete.
+        
+        for row in results:
+            metric_count=int("{}".format(row.metric_count))
+     
+  
     table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.RECOMMENDATION_TABLE}'
     update_query = f"""UPDATE {table_id}
         SET latest = FALSE
@@ -284,7 +297,8 @@ def export_metric_data(event, context):
          
 
 if __name__ == "__main__":
-    run_pipeline()
+    build_recommenation_table()
+    #run_pipeline()
 
   
     
