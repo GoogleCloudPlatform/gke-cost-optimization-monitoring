@@ -10,4 +10,5 @@ message MetricFlatRecord {
   string controller_type = 6;
   string namespace_name = 7;
   int64 points = 8;
+  float tstamp = 9;
 }

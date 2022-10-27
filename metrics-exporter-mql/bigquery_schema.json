@@ -39,4 +39,10 @@
       "type": "INTEGER",
       "mode": "NULLABLE"
     }
+    ,
+    {
+      "name": "tstamp",
+      "type": "FLOAT",
+      "mode": "NULLABLE"
+    }
   ]

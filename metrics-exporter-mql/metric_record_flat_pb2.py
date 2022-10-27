@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x18metric_record_flat.proto\"\xbd\x01\n\x10MetricFlatRecord\x12\x13\n\x0bmetric_name\x18\x01 \x01(\t\x12\x10\n\x08location\x18\x02 \x01(\t\x12\x12\n\nproject_id\x18\x03 \x01(\t\x12\x14\n\x0c\x63luster_name\x18\x04 \x01(\t\x12\x17\n\x0f\x63ontroller_name\x18\x05 \x01(\t\x12\x17\n\x0f\x63ontroller_type\x18\x06 \x01(\t\x12\x16\n\x0enamespace_name\x18\x07 \x01(\t\x12\x0e\n\x06points\x18\x08 \x01(\x03\x62\x06proto3'
+  serialized_pb=b'\n\x18metric_record_flat.proto\"\xcd\x01\n\x10MetricFlatRecord\x12\x13\n\x0bmetric_name\x18\x01 \x01(\t\x12\x10\n\x08location\x18\x02 \x01(\t\x12\x12\n\nproject_id\x18\x03 \x01(\t\x12\x14\n\x0c\x63luster_name\x18\x04 \x01(\t\x12\x17\n\x0f\x63ontroller_name\x18\x05 \x01(\t\x12\x17\n\x0f\x63ontroller_type\x18\x06 \x01(\t\x12\x16\n\x0enamespace_name\x18\x07 \x01(\t\x12\x0e\n\x06points\x18\x08 \x01(\x03\x12\x0e\n\x06tstamp\x18\t \x01(\x02\x62\x06proto3'
 )
 
 
@@ -89,6 +89,13 @@ _METRICFLATRECORD = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='tstamp', full_name='MetricFlatRecord.tstamp', index=8,
+      number=9, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -102,7 +109,7 @@ _METRICFLATRECORD = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=29,
-  serialized_end=218,
+  serialized_end=234,
 )
 
 DESCRIPTOR.message_types_by_name['MetricFlatRecord'] = _METRICFLATRECORD

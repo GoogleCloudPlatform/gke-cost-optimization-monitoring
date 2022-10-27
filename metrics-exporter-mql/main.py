@@ -67,7 +67,6 @@ def get_gke_metrics(metric_name, metric, window):
     )
     output = []
     for result in results:
-
         row = metric_record_flat_pb2.MetricFlatRecord ()
         label = result.resource.labels
         metadata = result.metadata.system_labels.fields
@@ -79,6 +78,7 @@ def get_gke_metrics(metric_name, metric, window):
         row.controller_name =  metricdata['targetref_name'] if "hpa" in metric_name else metadata['top_level_controller_name'].string_value 
         row.controller_type= metricdata['targetref_kind'] if "hpa" in metric_name else metadata['top_level_controller_type'].string_value
         row.namespace_name = label['namespace_name']
+        row.tstamp = time.time()
         points = result.points
         for point in points:
             if "cpu" in metric_name:
@@ -136,6 +136,7 @@ def get_vpa_recommenation_metrics(metric_name, metric, window):
         row.controller_name = label['controller_name']
         row.controller_type= label['controller_kind']
         row.namespace_name = label['namespace_name']
+        row.tstamp = time.time()
         for point in result.points:
             if((point.value.double_value) != 0):
                 points_array.append(int(point.value.double_value * 1000))
@@ -223,11 +224,12 @@ def append_rows_proto(rows):
 
 # Purge all data from metrics table. mql_metrics table is used as a staging table and must be purged to avoid duplicate metrics                
 def purge_raw_metric_data():
-    client = bigquery.Client()
-        
+    t = time.time() - 5400
+    client = bigquery.Client()   
     metric_table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.BIGQUERY_TABLE}'
+
     purge_raw_metric_query_job=client.query(
-        f"""DELETE {metric_table_id} WHERE TRUE
+        f"""DELETE {metric_table_id} WHERE TRUE AND tstamp < {t}
         """
     )
     print("Raw metric data purged from  {}".format(metric_table_id))
@@ -257,13 +259,14 @@ def build_recommenation_table():
     purge_raw_metric_data()
 
 def run_pipeline():
-    purge_raw_metric_data()
+
     for metric, query in config.MQL_QUERY.items():
         if query[2] == "gke_metric":
             append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
         else:
             append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
     build_recommenation_table()
+    purge_raw_metric_data()
     
 def export_metric_data(event, context):
     """Background Cloud Function to be triggered by Pub/Sub.
