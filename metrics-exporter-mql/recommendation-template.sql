@@ -176,7 +176,9 @@ END
 END
   AS cpu_provision_risk,
 TRUE as latest
-FROM recommendation)
+FROM recommendation
+WHERE cpu_request_recommendations != 0 AND memory_request_max_recommendations != 0
+)
 
 SELECT * FROM final_recommendation
 ORDER BY priority DESC

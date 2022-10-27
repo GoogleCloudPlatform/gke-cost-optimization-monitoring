@@ -268,7 +268,6 @@ def build_recommenation_table():
     # Start the query, passing in the recommendation query.
     query_job = client.query(sql)  # Make an API request.
     query_job.result()  # Wait for the job to complete.
-    purge_raw_metric_data()
 
 def run_pipeline():
 
