@@ -288,18 +288,14 @@ def build_recommenation_table():
 def run_pipeline():    
     for metric, query in config.MQL_QUERY.items():
         print(metric, query)
-        print("#############################################################################")
         if query[2] == "gke_metric":
             print(f"Processing GKE system metric {metric}")
             print(metric, query)
             append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
-            print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         else:
             print(f"Processing VPA recommendation metric {metric}")
             print(metric, query)
             append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
-            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-    print("0000000000000000000000000000000000000000000000")
     build_recommenation_table()
    
     
