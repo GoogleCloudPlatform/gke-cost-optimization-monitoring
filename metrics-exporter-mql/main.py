@@ -278,31 +278,14 @@ def build_recommenation_table():
         query_job.result()  # Wait for the job to complete.
         purge_raw_metric_data()
 
-def run_pipeline():
-    loaded_metrics = []
-    print("Querying Cloud Monitoring")
-    client = bigquery.Client()
-    metric_table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.BIGQUERY_TABLE}'
-    
-    #wait until we have all metrics
-   
-    query_metrics = f"""SELECT DISTINCT(metric_name) AS metrics FROM {metric_table_id}"""
-    query_job = client.query(query_metrics)
-    results = query_job.result()  # Waits for job to complete.
-        
-    for row in results: 
-        loaded_metrics.append("{}".format(row.metrics))
-        if "cpu_request_max_recommendations" in loaded_metrics:
-            loaded_metrics.append("cpu_request_recommendations") 
-    
+def run_pipeline():    
     for metric, query in config.MQL_QUERY.items():
-        if metric not in loaded_metrics:
-            if query[2] == "gke_metric":
-                print(f"Processing GKE system metric {metric}")
-                append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
-            else:
-                print(f"Processing VPA recommendation metric {metric}")
-                append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
+        if query[2] == "gke_metric":
+            print(f"Processing GKE system metric {metric}")
+            append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
+        else:
+            print(f"Processing VPA recommendation metric {metric}")
+            append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
     
     build_recommenation_table()
    
