@@ -33,7 +33,7 @@ import math
 # Fetch GKE metrics - cpu requested cores, cpu limit cores, memory requested bytes, memory limit bytes, count and all workloads with hpa
 def get_gke_metrics(metric_name, metric, window):
     # [START get_gke_metrics]
-
+    output = []
     client = monitoring_v3.MetricServiceClient()
     project_name = f"projects/{config.PROJECT_ID}"
     now = time.time()
@@ -70,7 +70,6 @@ def get_gke_metrics(metric_name, metric, window):
         print("Building Row")
         
         for result in results:
-            output = []
             row = metric_record_flat_pb2.MetricFlatRecord ()
             label = result.resource.labels
             metadata = result.metadata.system_labels.fields
@@ -84,6 +83,7 @@ def get_gke_metrics(metric_name, metric, window):
             row.namespace_name = label['namespace_name']
             row.tstamp = time.time()
             points = result.points
+            print(row)
             for point in points:
                 if "cpu" in metric_name:
                     row.points = (int(point.value.double_value * 1000)) if point.value.double_value is not None else 0
@@ -93,10 +93,9 @@ def get_gke_metrics(metric_name, metric, window):
                     row.points = (point.value.int64_value) if point.value.int64_value is not None else 0
                 break
             output.append(row.SerializeToString())
+        
     except:
-        output=[]
         print("No HPA workloads found")
-
 
     return output
     
@@ -160,6 +159,7 @@ def get_vpa_recommenation_metrics(metric_name, metric, window):
             row.metric_name = metric_name
             row.points = (max(points_array))
             output.append(row.SerializeToString())
+        
     return output
     # [END get_vpa_recommenation_metrics]   
  
@@ -175,7 +175,7 @@ def append_rows_proto(rows):
     # When creating the stream, choose the type. Use the PENDING type to wait
     # until the stream is committed before it is visible. See:
     # https://cloud.google.com/bigquery/docs/reference/storage/rpc/google.cloud.bigquery.storage.v1#google.cloud.bigquery.storage.v1.WriteStream.Type
-    write_stream.type_ = types.WriteStream.Type.COMMITTED
+    write_stream.type_ = types.WriteStream.Type.PENDING
     write_stream = write_client.create_write_stream(
         parent=parent, write_stream=write_stream
     )
@@ -287,14 +287,11 @@ def build_recommenation_table():
 
 def run_pipeline():    
     for metric, query in config.MQL_QUERY.items():
-        print(metric, query)
         if query[2] == "gke_metric":
             print(f"Processing GKE system metric {metric}")
-            print(metric, query)
             append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
         else:
             print(f"Processing VPA recommendation metric {metric}")
-            print(metric, query)
             append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
     build_recommenation_table()
    
