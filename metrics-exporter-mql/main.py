@@ -21,6 +21,8 @@ from google.cloud.bigquery_storage_v1 import types
 from google.cloud.bigquery_storage_v1 import writer
 from google.protobuf import descriptor_pb2
 import metric_record_flat_pb2
+from google.cloud import monitoring_v3
+import math
 
 # If you update the metric_record.proto protocol buffer definition, run:
 #
@@ -31,11 +33,9 @@ import metric_record_flat_pb2
 # Fetch GKE metrics - cpu requested cores, cpu limit cores, memory requested bytes, memory limit bytes, count and all workloads with hpa
 def get_gke_metrics(metric_name, metric, window):
     # [START get_gke_metrics]
-    from google.cloud import monitoring_v3
 
     client = monitoring_v3.MetricServiceClient()
     project_name = f"projects/{config.PROJECT_ID}"
-
     now = time.time()
     seconds = int(now)
     nanos = int((now - seconds) * 10 ** 9)
@@ -48,11 +48,12 @@ def get_gke_metrics(metric_name, metric, window):
             "start_time": {"seconds": (seconds - window), "nanos": nanos},
         }
     )
+
     aggregation = monitoring_v3.Aggregation(
         {
             "alignment_period": {"seconds": window},  
-            "per_series_aligner": monitoring_v3.Aggregation.Aligner.ALIGN_MAX,
-            "cross_series_reducer": monitoring_v3.Aggregation.Reducer.REDUCE_COUNT if metric_name == "count" else monitoring_v3.Aggregation.Reducer.REDUCE_MAX ,
+            "per_series_aligner": monitoring_v3.Aggregation.Aligner.ALIGN_MEAN,
+            "cross_series_reducer": monitoring_v3.Aggregation.Reducer.REDUCE_COUNT if metric_name == "container_count" else monitoring_v3.Aggregation.Reducer.REDUCE_MEAN,
             "group_by_fields": gke_group_by_fields if "hpa" not in metric_name else hpa_group_by_fields,
         }
     )
@@ -65,7 +66,9 @@ def get_gke_metrics(metric_name, metric, window):
             "aggregation": aggregation,
         }
     )
+    
     output = []
+    print("Building Row")
     for result in results:
         row = metric_record_flat_pb2.MetricFlatRecord ()
         label = result.resource.labels
@@ -82,13 +85,11 @@ def get_gke_metrics(metric_name, metric, window):
         points = result.points
         for point in points:
             if "cpu" in metric_name:
-                row.points = (int(point.value.double_value * 1000))
-                
+                row.points = (int(point.value.double_value * 1000)) if point.value.double_value is not None else 0
             elif "memory" in metric_name:
-                row.points = (int(point.value.int64_value/1024/1024))
-                
+                row.points = (int(point.value.double_value/1024/1024)) if point.value.double_value is not None else 0  
             else:
-                row.points = (point.value.int64_value)
+                row.points = (point.value.int64_value) if point.value.int64_value is not None else 0
             break
         output.append(row.SerializeToString())
     return output
@@ -121,7 +122,6 @@ def get_vpa_recommenation_metrics(metric_name, metric, window):
             "filter": f'metric.type = "{metric}" AND resource.label.namespace_name != "kube-system"',
             "interval": interval,
             "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
-       
         }
     )
     output = []
@@ -240,44 +240,72 @@ def build_recommenation_table():
     """ Create recommenations table in BigQuery
     """
     metric_count = 0
+    retries = 0
     client = bigquery.Client()
 
     metric_table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.BIGQUERY_TABLE}'
     
     #wait until we have all metrics
-    while metric_count != 10 :
-        query_metrics = f"""SELECT COUNT(DISTINCT(metric_name)) AS metric_count FROM {metric_table_id}"""
-        query_job = client.query(query_metrics)
-        results = query_job.result()  # Waits for job to complete.
+   
+    query_metrics = f"""SELECT COUNT(DISTINCT(metric_name)) AS metric_count FROM {metric_table_id}"""
+    query_job = client.query(query_metrics)
+    results = query_job.result()  # Waits for job to complete.
         
-        for row in results:
-            metric_count=int("{}".format(row.metric_count))
-  
-    table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.RECOMMENDATION_TABLE}'
-    update_query = f"""UPDATE {table_id}
-        SET latest = FALSE
-        WHERE latest = TRUE
-    """
-    query_job = client.query(update_query)
-    query_job.result()
-
-    with open('./recommendation.sql','r') as file:
-        sql = file.read()
-    print("Query results loaded to the table {}".format(table_id))
+    for row in results:
+        metric_count=int("{}".format(row.metric_count))
     
-    # Start the query, passing in the recommendation query.
-    query_job = client.query(sql)  # Make an API request.
-    query_job.result()  # Wait for the job to complete.
+    if retries > 3:
+        raise Exception("Unable to retrieve metrics")
+    else:
+        retries +=1
+    if metric_count < 10:
+        run_pipeline()
+    else:
+        table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.RECOMMENDATION_TABLE}'
+        update_query = f"""UPDATE {table_id}
+            SET latest = FALSE
+            WHERE latest = TRUE
+        """
+        query_job = client.query(update_query)
+        query_job.result()
+
+        with open('./recommendation.sql','r') as file:
+            sql = file.read()
+        print("Query results loaded to the table {}".format(table_id))
+        
+        # Start the query, passing in the recommendation query.
+        query_job = client.query(sql)  # Make an API request.
+        query_job.result()  # Wait for the job to complete.
+        purge_raw_metric_data()
 
 def run_pipeline():
-
+    loaded_metrics = []
+    print("Querying Cloud Monitoring")
+    client = bigquery.Client()
+    metric_table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.BIGQUERY_TABLE}'
+    
+    #wait until we have all metrics
+   
+    query_metrics = f"""SELECT DISTINCT(metric_name) AS metrics FROM {metric_table_id}"""
+    query_job = client.query(query_metrics)
+    results = query_job.result()  # Waits for job to complete.
+        
+    for row in results: 
+        loaded_metrics.append("{}".format(row.metrics))
+        if "cpu_request_max_recommendations" in loaded_metrics:
+            loaded_metrics.append("cpu_request_recommendations") 
+    
     for metric, query in config.MQL_QUERY.items():
-        if query[2] == "gke_metric":
-            append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
-        else:
-            append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
+        if metric not in loaded_metrics:
+            if query[2] == "gke_metric":
+                print(f"Processing GKE system metric {metric}")
+                append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
+            else:
+                print(f"Processing VPA recommendation metric {metric}")
+                append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
+    
     build_recommenation_table()
-    purge_raw_metric_data()
+   
     
 def export_metric_data(event, context):
     """Background Cloud Function to be triggered by Pub/Sub.
@@ -296,6 +324,3 @@ def export_metric_data(event, context):
 
 if __name__ == "__main__":
     run_pipeline()
-
-  
-    

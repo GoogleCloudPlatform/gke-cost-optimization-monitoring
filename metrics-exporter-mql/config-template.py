@@ -23,7 +23,7 @@ LATEST_WINDOW_SECONDS = 60
 # IMPORTANT: to guarantee successfully retriving data, please use a time window greater than 5 minutes
 
 MQL_QUERY = {
-    "count" :["kubernetes.io/container/cpu/request_cores", LATEST_WINDOW_SECONDS, "gke_metric"]
+    "container_count" :["kubernetes.io/container/cpu/request_cores", LATEST_WINDOW_SECONDS, "gke_metric"]
 ,
     "cpu_requested_cores" :["kubernetes.io/container/cpu/request_cores", LATEST_WINDOW_SECONDS, "gke_metric"]
 ,
