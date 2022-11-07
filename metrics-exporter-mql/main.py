@@ -57,42 +57,49 @@ def get_gke_metrics(metric_name, metric, window):
             "group_by_fields": gke_group_by_fields if "hpa" not in metric_name else hpa_group_by_fields,
         }
     )
-    results = client.list_time_series(
-        request={
-            "name": project_name,
-            "filter": f'metric.type = "{metric}" AND resource.label.namespace_name != "kube-system"',
-            "interval": interval,
-            "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
-            "aggregation": aggregation,
-        }
-    )
-    
-    output = []
-    print("Building Row")
-    for result in results:
-        row = metric_record_flat_pb2.MetricFlatRecord ()
-        label = result.resource.labels
-        metadata = result.metadata.system_labels.fields
-        metricdata = result.metric.labels
-        row.metric_name = metric_name
-        row.location = label['location']
-        row.project_id = label['project_id']
-        row.cluster_name = label['cluster_name']
-        row.controller_name =  metricdata['targetref_name'] if "hpa" in metric_name else metadata['top_level_controller_name'].string_value 
-        row.controller_type= metricdata['targetref_kind'] if "hpa" in metric_name else metadata['top_level_controller_type'].string_value
-        row.namespace_name = label['namespace_name']
-        row.tstamp = time.time()
-        points = result.points
-        for point in points:
-            if "cpu" in metric_name:
-                row.points = (int(point.value.double_value * 1000)) if point.value.double_value is not None else 0
-            elif "memory" in metric_name:
-                row.points = (int(point.value.double_value/1024/1024)) if point.value.double_value is not None else 0  
-            else:
-                row.points = (point.value.int64_value) if point.value.int64_value is not None else 0
-            break
-        output.append(row.SerializeToString())
+    try:
+        results = client.list_time_series(
+            request={
+                "name": project_name,
+                "filter": f'metric.type = "{metric}" AND resource.label.namespace_name != "kube-system"',
+                "interval": interval,
+                "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
+                "aggregation": aggregation,
+            }
+        )
+        print("Building Row")
+        
+        for result in results:
+            output = []
+            row = metric_record_flat_pb2.MetricFlatRecord ()
+            label = result.resource.labels
+            metadata = result.metadata.system_labels.fields
+            metricdata = result.metric.labels
+            row.metric_name = metric_name
+            row.location = label['location']
+            row.project_id = label['project_id']
+            row.cluster_name = label['cluster_name']
+            row.controller_name =  metricdata['targetref_name'] if "hpa" in metric_name else metadata['top_level_controller_name'].string_value 
+            row.controller_type= metricdata['targetref_kind'] if "hpa" in metric_name else metadata['top_level_controller_type'].string_value
+            row.namespace_name = label['namespace_name']
+            row.tstamp = time.time()
+            points = result.points
+            for point in points:
+                if "cpu" in metric_name:
+                    row.points = (int(point.value.double_value * 1000)) if point.value.double_value is not None else 0
+                elif "memory" in metric_name:
+                    row.points = (int(point.value.double_value/1024/1024)) if point.value.double_value is not None else 0  
+                else:
+                    row.points = (point.value.int64_value) if point.value.int64_value is not None else 0
+                break
+            output.append(row.SerializeToString())
+    except:
+        output=[]
+        print("No HPA workloads found")
+
+
     return output
+    
 
     # [END gke_get_metrics]
 
@@ -258,7 +265,7 @@ def build_recommenation_table():
         raise Exception("Unable to retrieve metrics")
     else:
         retries +=1
-    if metric_count < 10:
+    if metric_count < 8:
         run_pipeline()
     else:
         table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.RECOMMENDATION_TABLE}'
@@ -280,13 +287,19 @@ def build_recommenation_table():
 
 def run_pipeline():    
     for metric, query in config.MQL_QUERY.items():
+        print(metric, query)
+        print("#############################################################################")
         if query[2] == "gke_metric":
             print(f"Processing GKE system metric {metric}")
+            print(metric, query)
             append_rows_proto(get_gke_metrics(metric, query[0], query[1]))
+            print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         else:
             print(f"Processing VPA recommendation metric {metric}")
+            print(metric, query)
             append_rows_proto(get_vpa_recommenation_metrics(metric, query[0], query[1]))
-    
+            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+    print("0000000000000000000000000000000000000000000000")
     build_recommenation_table()
    
     
