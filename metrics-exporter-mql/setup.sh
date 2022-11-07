@@ -16,7 +16,7 @@ gcloud config set compute/zone $ZONE
 echo "Creating a gke cluster"
 gcloud container clusters create ${CLUSTER_NAME} \
     --project=${PROJECT_ID} --zone=${ZONE} \
-    --machine-type=e2-standard-2 --num-nodes=4 \
+    --machine-type=e2-standard-2 --num-nodes=5 \
     --workload-pool=${PROJECT_ID}.svc.id.goog
 
 sleep 7 &
