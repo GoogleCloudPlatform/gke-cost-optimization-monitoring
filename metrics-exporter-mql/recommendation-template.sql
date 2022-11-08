@@ -185,7 +185,6 @@ END
   AS cpu_provision_risk,
 TRUE as latest
 FROM recommendation
-WHERE cpu_request_recommendations != 0 AND memory_request_recommendations != 0
 )
 
 SELECT 
@@ -214,5 +213,5 @@ mem_provision_status,
 mem_provision_risk,
 cpu_provision_status,
 cpu_provision_risk,
-latest FROM final_recommendation
+latest FROM final_recommendation WHERE priority IS NOT NULL
 ORDER BY priority DESC
