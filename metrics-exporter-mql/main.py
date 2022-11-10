@@ -236,7 +236,7 @@ def purge_raw_metric_data():
     metric_table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.BIGQUERY_TABLE}'
 
     purge_raw_metric_query_job=client.query(
-        f"""DELETE {metric_table_id} WHERE TRUE AND tstamp < {t}
+        f"""DELETE `{metric_table_id}` WHERE TRUE AND tstamp < {t}
         """
     )
     print("Raw metric data purged from  {}".format(metric_table_id))
@@ -246,44 +246,25 @@ def purge_raw_metric_data():
 def build_recommenation_table():
     """ Create recommenations table in BigQuery
     """
-    metric_count = 0
-    retries = 0
     client = bigquery.Client()
 
-    metric_table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.BIGQUERY_TABLE}'
-    
-    #wait until we have all metrics
-   
-    query_metrics = f"""SELECT COUNT(DISTINCT(metric_name)) AS metric_count FROM {metric_table_id}"""
-    query_job = client.query(query_metrics)
-    results = query_job.result()  # Waits for job to complete.
-        
-    for row in results:
-        metric_count=int("{}".format(row.metric_count))
-    
-    if retries > 3:
-        raise Exception("Unable to retrieve metrics")
-    else:
-        retries +=1
-    if metric_count < 8:
-        run_pipeline()
-    else:
-        table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.RECOMMENDATION_TABLE}'
-        update_query = f"""UPDATE {table_id}
-            SET latest = FALSE
-            WHERE latest = TRUE
-        """
-        query_job = client.query(update_query)
-        query_job.result()
 
-        with open('./recommendation.sql','r') as file:
-            sql = file.read()
-        print("Query results loaded to the table {}".format(table_id))
+    table_id = f'{config.PROJECT_ID}.{config.BIGQUERY_DATASET}.{config.RECOMMENDATION_TABLE}'
+    
+    update_query = f"""UPDATE `{table_id}`
+        SET latest = FALSE
+        WHERE latest = TRUE"""
+    query_job = client.query(update_query)
+    query_job.result()
+
+    with open('./recommendation.sql','r') as file:
+        sql = file.read()
+    print("Query results loaded to the table {}".format(table_id))
         
-        # Start the query, passing in the recommendation query.
-        query_job = client.query(sql)  # Make an API request.
-        query_job.result()  # Wait for the job to complete.
-        purge_raw_metric_data()
+    # Start the query, passing in the recommendation query.
+    query_job = client.query(sql)  # Make an API request.
+    query_job.result()  # Wait for the job to complete.
+    purge_raw_metric_data()
 
 def run_pipeline():    
     for metric, query in config.MQL_QUERY.items():
