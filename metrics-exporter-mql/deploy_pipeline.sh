@@ -31,7 +31,7 @@ gcloud functions deploy mql-export-metric \
 --region $REGION \
 --trigger-topic $PUBSUB_TOPIC \
 --runtime python39 \
---memory 512MB \
+--memory 2048MB \
 --timeout 540s \
 --entry-point export_metric_data \
 --set-env-vars PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python \
