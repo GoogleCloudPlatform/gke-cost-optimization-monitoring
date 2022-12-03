@@ -512,13 +512,10 @@ Next you use Looker Studio to visualize data in the BigQuery vpa_container_recom
 
 
 
-1. Open the [VPA container recommendations dashboard template](https://datastudio.google.com/c/u/0/reporting/b99a3b05-06da-44e1-946e-70f37ce5d5a1/page/tEnnC/preview)
+1. Open the [VPA container recommendations dashboard template](https://datastudio.google.com/u/0/reporting/2d07dabe-2f0f-45a4-8c91-71a944d6f3ed/page/tEnnC)
+Note to follow the next steps append /preview to the end of the dashboard URL. Example `https://datastudio.google.com/[ID]/preview`
+
 2. Click “Use my own data”
-
-    
-
-
-
 3. Select your project
 4. Select metric_export as the Dataset
 5. Select vpa_container_recommendations as the Table
