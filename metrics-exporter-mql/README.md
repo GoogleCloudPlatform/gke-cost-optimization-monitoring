@@ -239,7 +239,11 @@ The output similar to the following:
     redis-cart              1/1     1            1           4m54s
     shippingservice         1/1     1            1           4m54s
 ```
+9. Change working directory
 
+    ```
+    cd ../
+    ```
 
 
 ## Deploy cron job to export HorizontalPodAutoscaler metrics to Cloud Monitoring
@@ -259,14 +263,10 @@ Deploy a cron job to export metrics to Cloud Monitoring to identify workloads wi
     gcloud artifacts repositories create metric-exporter-repo --repository-format=docker \
     --location=$REGION --description="Docker repository"
     ```
-
-
-2. Change working directory
-
+2. Configure access to the repository
     ```
-    cd ../
+     gcloud auth configure-docker $REGION-docker.pkg.dev
     ```
-
 
 3. Submit the Cloud Build job to deploy the metric exporter to create custom HPA metrics in Cloud Monitoring
 
