@@ -13,11 +13,18 @@ echo "Configuring region and zone"
 gcloud config set compute/region $REGION
 gcloud config set compute/zone $ZONE
 
+echo "Create a new IAM service account"
+gcloud iam service-accounts create ${SERVICE_ACCOUNT} \
+    --project=${PROJECT_ID}
+
 echo "Creating a gke cluster"
 gcloud container clusters create ${CLUSTER_NAME} \
     --project=${PROJECT_ID} --zone=${ZONE} \
+    --service-account=${SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
     --machine-type=e2-standard-2 --num-nodes=5 \
     --workload-pool=${PROJECT_ID}.svc.id.goog
+    #--scopes=gke-default \
+    #--enable-shielded-nodes \
 
 sleep 7 &
 PID=$!
@@ -32,10 +39,6 @@ done
 echo "Get credentials for your cluster"
 gcloud container clusters get-credentials ${CLUSTER_NAME}
 
-echo "Create a new IAM service account"
-gcloud iam service-accounts create ${SERVICE_ACCOUNT} \
-    --project=${PROJECT_ID}
-
 echo "Granting roles..."
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
     --member="serviceAccount:${SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com" \
@@ -44,6 +47,10 @@ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
 gcloud projects add-iam-policy-binding  $PROJECT_ID \
     --member="serviceAccount:${SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com" \
     --role="roles/compute.viewer"
+
+gcloud projects add-iam-policy-binding  $PROJECT_ID \
+    --member="serviceAccount:${SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com" \
+    --role="roles/artifactregistry.reader"
 
 gcloud iam service-accounts add-iam-policy-binding ${SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
     --role roles/iam.workloadIdentityUser \
@@ -60,9 +67,6 @@ kubectl get deployments --field-selector='metadata.name==redis-cart' -o go-templ
 kubectl get hpa
 
 kubectl create ns custom-metrics
-
-
-
 
 
 echo "SETUP COMPLETE"
