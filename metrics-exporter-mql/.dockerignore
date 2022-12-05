@@ -1,4 +1,5 @@
 Dockerfile
+/terraform
 README.md
 *.pyc
 *.pyo
