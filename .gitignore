@@ -1,4 +1,5 @@
 k8s/*.yaml
+/terraform/*
 monitoring/dashboards/*.yaml
 monitoring/policies/*.yaml
 /metrics-exporter-mql/config.py
