@@ -23,8 +23,6 @@ gcloud container clusters create ${CLUSTER_NAME} \
     --service-account=${SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
     --machine-type=e2-standard-2 --num-nodes=5 \
     --workload-pool=${PROJECT_ID}.svc.id.goog
-    #--scopes=gke-default \
-    #--enable-shielded-nodes \
 
 sleep 7 &
 PID=$!
@@ -51,6 +49,10 @@ gcloud projects add-iam-policy-binding  $PROJECT_ID \
 gcloud projects add-iam-policy-binding  $PROJECT_ID \
     --member="serviceAccount:${SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com" \
     --role="roles/artifactregistry.reader"
+
+gcloud projects add-iam-policy-binding  $PROJECT_ID \
+    --member="serviceAccount:${SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com" \
+    --role="roles/container.nodeServiceAgent"
 
 gcloud iam service-accounts add-iam-policy-binding ${SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
     --role roles/iam.workloadIdentityUser \

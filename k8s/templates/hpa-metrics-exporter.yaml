@@ -18,7 +18,7 @@ metadata:
   name: metrics-exporter-sa
   namespace: custom-metrics
   annotations:
-    iam.gke.io/gcp-service-account: svc-metric-exporter@PROJECT_ID.iam.gserviceaccount.com
+    iam.gke.io/gcp-service-account: $SERVICE_ACCOUNT@$PROJECT_ID.iam.gserviceaccount.com
 
 ---
 
