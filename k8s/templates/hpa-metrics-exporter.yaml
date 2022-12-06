@@ -67,7 +67,7 @@ spec:
             iam.gke.io/gke-metadata-server-enabled: "true"
           containers:
           - name: metrics-exporter
-            image: $REGION-docker.pkg.dev/$PROJECT_ID/metric-exporter-repo/metric-exporter
+            image: $REGION-docker.pkg.dev/$PROJECT_ID/metric-exporter-repo/metric-exporter/metric-exporter:latest
             env:
               - name: DISABLEVPA
                 value: "true"
