@@ -239,11 +239,7 @@ The output similar to the following:
     redis-cart              1/1     1            1           4m54s
     shippingservice         1/1     1            1           4m54s
 ```
-9. Change working directory
 
-    ```
-    cd ../
-    ```
 
 
 ## Deploy cron job to export HorizontalPodAutoscaler metrics to Cloud Monitoring
@@ -271,15 +267,16 @@ Deploy a cron job to export metrics to Cloud Monitoring to identify workloads wi
 3. Submit the Cloud Build job to deploy the metric exporter to create custom HPA metrics in Cloud Monitoring
 
     ```
-    gcloud builds submit --region=${REGION} --tag ${REGION}-docker.pkg.dev/${PROJECT_ID}/metric-exporter-repo/metric-exporter:latest
+    gcloud builds submit ../ --config=cloudbuild.yaml  --substitutions=_REGION=$REGION
     ```
 
 
 4. Update metric exporter yaml
 
     ```
-    sed "s/PROJECT_ID/$PROJECT_ID/g" ./k8s/templates/hpa-metrics-exporter.yaml > ./k8s/metrics-exporter.yaml
-    kubectl apply -f k8s/metrics-exporter.yaml
+    envsubst < ../k8s/templates/hpa-metrics-exporter.yaml > ../k8s/metrics-exporter.yaml
+    kubectl apply -f ../k8s/metrics-exporter.yaml
+
     ```
 
 
@@ -378,7 +375,6 @@ Now all required metrics from Cloud Monitoring, you deploy a pipeline to export 
 1. Create a BigQuery table to store the VPA container recommendations
 
     ```
-    cd metrics-exporter-mql
     envsubst < recommendation-template.sql> recommendation.sql
     bq mk ${BIGQUERY_DATASET}
     bq mk --table ${BIGQUERY_DATASET}.${BIGQUERY_VPA_RECOMMENDATION_TABLE} bigquery_recommendation_schema.json
@@ -406,7 +402,6 @@ The output similar to the following:
 
 ```
     mql-export-metriceg5fe9df8l8r processing metric cpu_request_cores with 12 rows
-
 ```
 
 
