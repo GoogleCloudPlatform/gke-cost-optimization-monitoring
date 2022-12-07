@@ -18,7 +18,7 @@ This tutorial goal is to teach you how to pull VPA recommendations at scale from
 
 ## Understanding why resource rightsizing is important
 
-![Alt text](/metrics-exporter-mql/images/1.png?raw=true)
+![Alt text](/metrics-exporter/images/1.png?raw=true)
 
 
 Improper resource provisioning causes issues if not done properly. Under-provisioning can starve your containers of the necessary resources to run your application, making them slow and unreliable. Over-provisioning won’t impact the performance of your application but will increase your monthly bills.
@@ -149,7 +149,7 @@ To simulate a realistic environment, you will deploy a sample application to ill
 
 
 
-![Alt text](/metrics-exporter-mql/images/2.png?raw=true)
+![Alt text](/metrics-exporter/images/2.png?raw=true)
 
 
 The steps below install the boutique sample application and tweak a few configurations to simulate a more realistic scenario. For example, it adds [horizontal Pod autoscaler](https://cloud.google.com/kubernetes-engine/docs/concepts/horizontalpodautoscaler) (HPA)  for some workloads and changes resource requests and limits.
@@ -324,7 +324,7 @@ The output similar to the following:
 
 ### 
 
-![Alt text](/metrics-exporter-mql/images/3.png?raw=true)
+![Alt text](/metrics-exporter/images/3.png?raw=true)
 
 
 
@@ -337,19 +337,19 @@ GKE provides out-of-the-box VPA container recommendations in the Workloads UI un
 1. In the Google Cloud console, go to the COST OPTIMIZATION tab on **GKE Workloads **page. \
 [Go to Workloads Cost Optimization](https://console.cloud.google.com/kubernetes/workload/cost)
 
-![Alt text](/metrics-exporter-mql/images/4.png?raw=true)
+![Alt text](/metrics-exporter/images/4.png?raw=true)
 
 2. Select any workload listed
 3. Select ACTIONS > Scale > Edit resource request 
 
-![Alt text](/metrics-exporter-mql/images/5.png?raw=true)
+![Alt text](/metrics-exporter/images/5.png?raw=true)
 
 
 
     The Scale compute resources page provides the latest recommendations based on usage patterns. Take note of the gray information box before applying the latest changes. The values provided are for the current point and time and may not reflect your workload’s needs.
 
 
-![Alt text](/metrics-exporter-mql/images/6.png?raw=true)
+![Alt text](/metrics-exporter/images/6.png?raw=true)
 
 
 As you can see in the information box above, VPA recommendation provides a recommendation at a point in time, which means it can provide different recommendations depending on the day/hour you view it. This is important to note, for workloads with constant load and may spike throughout the month. Setting resources too low can cause reliability or performance issues, while resources set too high increase cost. 
@@ -364,7 +364,7 @@ Now all required metrics from Cloud Monitoring, you deploy a pipeline to export 
 	Note: you can customize the opinionated SQL queries in file . 
 
 
-![Alt text](/metrics-exporter-mql/images/7.png?raw=true)
+![Alt text](/metrics-exporter/images/7.png?raw=true)
 
 
 
@@ -503,7 +503,7 @@ Looker Studio is a free, self-service business intelligence platform that lets u
 Next you use Looker Studio to visualize data in the BigQuery vpa_container_recommendation table.
 
 
-![Alt text](/metrics-exporter-mql/images/8.png?raw=true)
+![Alt text](/metrics-exporter/images/8.png?raw=true)
 
 
 
@@ -518,7 +518,7 @@ Note to follow the next steps append /preview to the end of the dashboard URL. E
     Example: 
 
 
-![Alt text](/metrics-exporter-mql/images/9.png?raw=true)
+![Alt text](/metrics-exporter/images/9.png?raw=true)
 
 
 
@@ -527,17 +527,17 @@ Note to follow the next steps append /preview to the end of the dashboard URL. E
 The Details page allows you to see additional information not included on the overview page. This section will go over the major sections of this view.
 
 
-![Alt text](/metrics-exporter-mql/images/10.png?raw=true)
+![Alt text](/metrics-exporter/images/10.png?raw=true)
 
 Project details such as location, project ID, cluster name, controller name, controller type and count are shown in the first few columns of the table. These metrics are standard GKE metrics from Cloud Monitoring based on your workloads.
 
-![Alt text](/metrics-exporter-mql/images/11.png?raw=true)
+![Alt text](/metrics-exporter/images/11.png?raw=true)
 
 
 The section below shows the CPU cores requested and the current CPU cores limit for each workload. QoS is calculated based on the current CPU requested and limit values, and the logic used to calculate this value is detailed in the table below. The last two rows contain the CPU recommendations for CPU requests and limits based on VPA. Details on how the CPU recommendations are calculated can be found in the table below.
 
 
-![Alt text](/metrics-exporter-mql/images/12.png?raw=true)
+![Alt text](/metrics-exporter/images/12.png?raw=true)
 
 
 
@@ -608,7 +608,7 @@ The third group of columns represent the current memory request,  limits and the
 
 
 
-![Alt text](/metrics-exporter-mql/images/13.png?raw=true)
+![Alt text](/metrics-exporter/images/13.png?raw=true)
 
 
 
@@ -652,12 +652,12 @@ The formula used to calculate priority:
 
  priority = (CPU requested - CPU recommendation) + ((memory requested - memory recommendation) / (Predefined vCPUs/Predefined Memory))
 
-![Alt text](/metrics-exporter-mql/images/14.png?raw=true)
+![Alt text](/metrics-exporter/images/14.png?raw=true)
 
 
 The last page of the dashboard summarizes how the effort to right-size is going. The dashboard is split into CPU and memory, respectively. The bar signifies the total value of requested resources. The line shows where the values should be based on a 30-day window. The top of the bar should aligned with the recommendation line. 
 
-![Alt text](/metrics-exporter-mql/images/15.png?raw=true)
+![Alt text](/metrics-exporter/images/15.png?raw=true)
 
 
 
