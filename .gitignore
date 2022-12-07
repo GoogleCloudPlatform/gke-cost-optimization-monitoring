@@ -1,3 +1,7 @@
 k8s/*.yaml
+/metrics-exporter/terraform/
 monitoring/dashboards/*.yaml
 monitoring/policies/*.yaml
+/metrics-exporter/config.py
+/metrics-exporter/recommendation.sql
+__pycache__

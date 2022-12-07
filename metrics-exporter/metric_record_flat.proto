@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+message MetricFlatRecord {
+
+  string metric_name = 1;
+  string location = 2;
+  string project_id = 3;
+  string cluster_name = 4;
+  string controller_name = 5;
+  string controller_type = 6;
+  string namespace_name = 7;
+  int64 points = 8;
+  float tstamp = 9;
+}

@@ -17,6 +17,8 @@ kind: ServiceAccount
 metadata:
   name: metrics-exporter-sa
   namespace: custom-metrics
+  annotations:
+    iam.gke.io/gcp-service-account: $SERVICE_ACCOUNT@$PROJECT_ID.iam.gserviceaccount.com
 
 ---
 
@@ -60,10 +62,12 @@ spec:
     spec:
       template:
         spec:
-          serviceAccount: metrics-exporter-sa
+          serviceAccountName: metrics-exporter-sa
+          nodeSelector:
+            iam.gke.io/gke-metadata-server-enabled: "true"
           containers:
           - name: metrics-exporter
-            image: gcr.io/PROJECT_ID/metrics-exporter
+            image: $REGION-docker.pkg.dev/$PROJECT_ID/metric-exporter-repo/metric-exporter:latest
             env:
               - name: DISABLEVPA
                 value: "true"
