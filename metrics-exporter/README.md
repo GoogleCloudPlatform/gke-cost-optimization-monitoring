@@ -187,7 +187,7 @@ The steps below install the boutique sample application and tweak a few configur
 6. Clone the repository:
 
     ```
-    git clone https://github.com/aburhan/gke-cost-optimization-monitoring && cd gke-cost-optimization-monitoring/metrics-exporter-mql
+    git clone https://github.com/aburhan/gke-cost-optimization-monitoring && cd gke-cost-optimization-monitoring/metrics-exporter
     ```
 
 
