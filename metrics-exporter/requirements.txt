@@ -6,6 +6,7 @@ chardet
 google-api-core
 google-auth
 google-cloud-bigquery
+google-cloud-bigquery-storage
 google-cloud-monitoring
 google-cloud-core
 google-crc32c
@@ -20,3 +21,4 @@ requests
 rsa
 six
 urllib3
+numpy
