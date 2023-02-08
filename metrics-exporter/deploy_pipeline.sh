@@ -31,6 +31,7 @@ gcloud functions deploy mql-export-metric \
 --region $REGION \
 --trigger-topic $PUBSUB_TOPIC \
 --runtime python39 \
+--ingress-settings=internal-and-gclb \
 --memory 2048MB \
 --timeout 540s \
 --entry-point export_metric_data \
