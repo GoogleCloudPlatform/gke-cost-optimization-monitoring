@@ -1,15 +1,5 @@
 
-echo "Setup starting, enable services please wait..."
-gcloud services enable \
-    compute.googleapis.com \
-    container.googleapis.com \
-    monitoring.googleapis.com \
-    artifactregistry.googleapis.com \
-    cloudbuild.googleapis.com
-
-
 echo "Configuring region and zone"
-
 gcloud config set compute/region $REGION
 gcloud config set compute/zone $ZONE
 
@@ -20,6 +10,9 @@ gcloud iam service-accounts create ${SERVICE_ACCOUNT} \
 echo "Creating a gke cluster"
 gcloud container clusters create ${CLUSTER_NAME} \
     --project=${PROJECT_ID} --zone=${ZONE} \
+    --enable-shielded-nodes \
+    --shielded-secure-boot \
+    --shielded-integrity-monitoring \
     --service-account=${SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
     --machine-type=e2-standard-2 --num-nodes=5 \
     --workload-pool=${PROJECT_ID}.svc.id.goog
