@@ -4,18 +4,6 @@ gcloud iam service-accounts create mql-export-metrics \
 --display-name "MQL export metrics SA" \
 --description "Used for the function that export monitoring metrics"
 
-echo "Setup starting, enable services necessary to run the pipeline. Please wait..."
-gcloud services enable \
-cloudfunctions.googleapis.com \
-cloudbuild.googleapis.com \
-cloudscheduler.googleapis.com
-
-
-envsubst < config-template.py > config.py
-echo "Create VPA container recommendation table"
-bq mk --table ${BIGQUERY_DATASET}.${BIGQUERY_MQL_TABLE}  bigquery_schema.json
-
-
 echo "Assigning IAM roles to the service account..."
 gcloud projects add-iam-policy-binding  $PROJECT_ID --member="serviceAccount:$EXPORT_METRIC_SERVICE_ACCOUNT" --role="roles/monitoring.viewer"
 gcloud projects add-iam-policy-binding  $PROJECT_ID --member="serviceAccount:$EXPORT_METRIC_SERVICE_ACCOUNT" --role="roles/bigquery.dataEditor"
