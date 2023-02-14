@@ -26,6 +26,9 @@ gcloud functions deploy mql-export-metric \
 --set-env-vars PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python \
 --service-account=$EXPORT_METRIC_SERVICE_ACCOUNT
 
+echo "Enable the Cloud Scheduler api.."
+gcloud services enable cloudscheduler.googleapis.com
+
 echo "Deploy the Cloud Scheduler job with a schedule to trigger the Cloud Function once a day.."
 gcloud scheduler jobs create pubsub get_metric_mql \
 --schedule "* 23 * * *" \
