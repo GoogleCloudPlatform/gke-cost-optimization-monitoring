@@ -187,18 +187,15 @@ The steps below install the boutique sample application and tweak a few configur
 6. Clone the repository:
 
     ```
-    git clone https://github.com/aburhan/gke-cost-optimization-monitoring && cd gke-cost-optimization-monitoring/metrics-exporter
+    git clone https://github.com/GoogleCloudPlatform/gke-cost-optimization-monitoring && cd gke-cost-optimization-monitoring/metrics-exporter
     ```
 
 
 7. Run the setup script:
 
-
-```
-      ./setup.sh
-```
-
-
+    ```
+    ./setup.sh
+    ```
 
     The setup script will:
 
@@ -260,8 +257,9 @@ Deploy a cron job to export metrics to Cloud Monitoring to identify workloads wi
     --location=$REGION --description="Docker repository"
     ```
 2. Configure access to the repository
+
     ```
-     gcloud auth configure-docker $REGION-docker.pkg.dev
+    gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
     ```
 
 3. Submit the Cloud Build job to deploy the metric exporter to create custom HPA metrics in Cloud Monitoring
@@ -304,11 +302,11 @@ The output similar to the following:
 
 
 ```
-    Events:
-      Type     Reason            Age              From                Message
-      ----     ------            ----             ----                -------
-     …
-      Normal   SawCompletedJob   72s              cronjob-controller  Saw completed job: metrics-exporter-27772443, status: Complete
+Events:
+    Type     Reason            Age              From                Message
+    ----     ------            ----             ----                -------
+    …
+    Normal   SawCompletedJob   72s              cronjob-controller  Saw completed job: metrics-exporter-27772443, status: Complete
 ```
 
 
@@ -376,7 +374,9 @@ Now all required metrics from Cloud Monitoring, you deploy a pipeline to export 
 
     ```
     envsubst < recommendation-template.sql> recommendation.sql
+    envsubst < config-template.py > config.py
     bq mk ${BIGQUERY_DATASET}
+    bq mk --table ${BIGQUERY_DATASET}.${BIGQUERY_MQL_TABLE} bigquery_schema.json
     bq mk --table ${BIGQUERY_DATASET}.${BIGQUERY_VPA_RECOMMENDATION_TABLE} bigquery_recommendation_schema.json
     ```
 
@@ -390,21 +390,16 @@ Now all required metrics from Cloud Monitoring, you deploy a pipeline to export 
 
 3. View the Cloud Function logs [Go to Cloud Functions console](https://console.cloud.google.com/functions/details/us-central1/mql-export-metric)
 
-Note: If you don’t see logs in the Cloud Function console. Run the schedule using `gcloud scheduler jobs run get_metric_mql --location $REGION.  `
-
-
+    Note: If you don’t see logs in the Cloud Function console. Run the schedule using `gcloud scheduler jobs run get_metric_mql --location $REGION.`
 
 4. Select the LOGS tab on the mql-export-metric details page
 5. Verify metrics logs are being processed
 
-The output similar to the following:
+    The output similar to the following:
 
-
-```
+    ```
     mql-export-metriceg5fe9df8l8r processing metric cpu_request_cores with 12 rows
-```
-
-
+    ```
 
 6. In the console, verify the GKE metric data is written to BigQuery by running the following query:
 
@@ -412,14 +407,10 @@ The output similar to the following:
     bq query \
     --use_legacy_sql=false \
     "SELECT DISTINCT metric_name FROM ${PROJECT_ID}.${BIGQUERY_DATASET}.${BIGQUERY_MQL_TABLE} ORDER BY metric_name"
-
     ```
-
 
 The output similar to the following. Depending on the number of workloads this may take a few minutes to write all metrics to BigQuery, if output differs from what is below wait then re-run the command:
 
-
-```
     +---------------------------------------------+
     |                 metric_name                 |
     +---------------------------------------------+
@@ -434,8 +425,6 @@ The output similar to the following. Depending on the number of workloads this m
     | memory_request_recommendations              |
     | memory_requested_bytes                      |
     +---------------------------------------------+
-```
-
 
 
 ## Query GKE Container Recommendations
@@ -485,10 +474,8 @@ Example:
 2. In the query editor,  select all rows in the recommendation table:
 
     ```
-    SELECT * FROM `[PROJECT_ID].metric_export.vpa_container_recommendations` where latest = TRUE
+    SELECT * FROM `[PROJECT_ID]`.metric_export.vpa_container_recommendations where latest = TRUE
     ```
-
-
 
     Replace [PROJECT_ID] with your project ID.
 
