@@ -52,7 +52,7 @@ func main() {
 	log.Infof("************** METRICS EXPORTER STARTED (version %s) **************", version)
 
 	now := time.Now().Format(time.RFC3339)
-	
+
 	DISABLEVPA := os.Getenv("DISABLEVPA")
 
 	hpas := retrieveHPAs()
@@ -81,12 +81,12 @@ func retrieveVPAs() []k8s.VPA {
 }
 
 func retrieveHPAs() []k8s.HPA {
-	cmd := "kubectl get hpa.v2beta2.autoscaling --all-namespaces -o yaml"
+	cmd := "kubectl get hpa.v2.autoscaling --all-namespaces -o yaml"
 	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 	data := string(out)
 	exitOnError(fmt.Sprintf("Failed to execute command: %s\nRoot Cause: %+v", cmd, data), err)
 
-	hpas, err := k8s.DecodeHPAListV2Beta2([]byte(data))
+	hpas, err := k8s.DecodeHPAListV2([]byte(data))
 	exitOnError(fmt.Sprintf("Failed to decode HPA list from command: %s", cmd), err)
 	return hpas
 }

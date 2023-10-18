@@ -47,6 +47,200 @@ spec:
 	}
 }
 
+func TestHPABasicV2(t *testing.T) {
+	yaml := `apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: php-apache
+spec:
+  maxReplicas: 20
+  minReplicas: 10
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: php-apache
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60`
+
+	hpa, err := decodeHPA([]byte(yaml))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expected := "default"
+	if got := hpa.Namespace; got != expected {
+		t.Errorf("Expected Namespace %+v, got %+v", expected, got)
+	}
+	expected = "php-apache"
+	if got := hpa.Name; got != expected {
+		t.Errorf("Expected Name %+v, got %+v", expected, got)
+	}
+	expected = "apps/v1"
+	if got := hpa.TargetRef.APIVersion; got != expected {
+		t.Errorf("Expected APIVersion %+v, got %+v", expected, got)
+	}
+	expected = "Deployment"
+	if got := hpa.TargetRef.Kind; got != expected {
+		t.Errorf("Expected Kind %+v, got %+v", expected, got)
+	}
+	expected = "php-apache"
+	if got := hpa.TargetRef.Name; got != expected {
+		t.Errorf("Expected Name %+v, got %+v", expected, got)
+	}
+
+	expectedMinReplicas := int32(10)
+	if got := hpa.MinReplicas; got != expectedMinReplicas {
+		t.Errorf("Expected Min Replicas %+v, got %+v", expectedMinReplicas, got)
+	}
+
+	expectedMaxReplicas := int32(20)
+	if got := hpa.MaxReplicas; got != expectedMaxReplicas {
+		t.Errorf("Expected Max Replicas %+v, got %+v", expectedMaxReplicas, got)
+	}
+
+	expectedCPU := int32(60)
+	if got := hpa.TargetCPUPercentage; got != expectedCPU {
+		t.Errorf("Expected target CPU %+v, got %+v", expectedCPU, got)
+	}
+	expectedMemory := int32(0)
+	if got := hpa.TargetMemoryPercentage; got != expectedMemory {
+		t.Errorf("Expected target Memory %+v, got %+v", expectedMemory, got)
+	}
+}
+
+func TestHPANoMinReplicasV2(t *testing.T) {
+	yaml := `apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: php-apache
+spec:
+  maxReplicas: 20
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: php-apache
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60`
+
+	hpa, err := decodeHPA([]byte(yaml))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expectedMinReplicas := int32(1)
+	if got := hpa.MinReplicas; got != expectedMinReplicas {
+		t.Errorf("Expected Min Replicas %+v, got %+v", expectedMinReplicas, got)
+	}
+}
+
+func TestHPATargetMemoryV2(t *testing.T) {
+	yaml := `apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: test-memory-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       test
+  minReplicas: 2
+  maxReplicas: 100
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 60`
+
+	hpa, err := decodeHPA([]byte(yaml))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if hpa.TargetCPUPercentage != 0 {
+		t.Error("Target CPU should be zero")
+	}
+	expectedMemory := int32(60)
+	if got := hpa.TargetMemoryPercentage; got != expectedMemory {
+		t.Errorf("Expected target Memory %+v, got %+v", expectedMemory, got)
+	}
+}
+
+func TestHPATargetCPUAndMemoryV2(t *testing.T) {
+	yaml := `apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: test-memory-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind:       Deployment
+    name:       test
+  minReplicas: 2
+  maxReplicas: 100
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 60`
+
+	hpa, err := decodeHPA([]byte(yaml))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expectedCPU := int32(50)
+	if got := hpa.TargetCPUPercentage; got != expectedCPU {
+		t.Errorf("Expected target CPU %+v, got %+v", expectedCPU, got)
+	}
+	expectedMemory := int32(60)
+	if got := hpa.TargetMemoryPercentage; got != expectedMemory {
+		t.Errorf("Expected target Memory %+v, got %+v", expectedMemory, got)
+	}
+}
+
+func TestHPANoTargetCPUV2(t *testing.T) {
+	yaml := `apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: php-apache
+spec:
+  maxReplicas: 20
+  minReplicas: 10
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: php-apache`
+
+	hpa, _ := decodeHPA([]byte(yaml))
+	if hpa.TargetCPUPercentage != 0 {
+		t.Error("Target CPU should be zero")
+	}
+}
+
 func TestHPABasicV2beta2(t *testing.T) {
 	yaml := `apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
@@ -545,6 +739,23 @@ spec:
 	hpa, _ := decodeHPA([]byte(yaml))
 	if hpa.TargetCPUPercentage != 0 {
 		t.Error("Target CPU should be zero")
+	}
+}
+
+func TestHPADecodeListV2(t *testing.T) {
+	data, err := ioutil.ReadFile("./testdata/hpa-v2.yaml")
+	if err != nil {
+		t.Errorf("Error reading file: %+v", err)
+	}
+
+	hpas, err := DecodeHPAListV2(data)
+	if err != nil {
+		t.Errorf("Error decoding file: %+v", err)
+	}
+	for _, hpa := range hpas {
+		if hpa.TargetCPUPercentage == 0 && hpa.TargetMemoryPercentage == 0 {
+			t.Errorf("HPA should have resource cpu or memory utilization: %+v", hpa)
+		}
 	}
 }
 

@@ -22,6 +22,7 @@ import (
 	vpaV1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 
 	hpaV1 "k8s.io/api/autoscaling/v1"
+	hpaV2 "k8s.io/api/autoscaling/v2"
 	hpaV2beta1 "k8s.io/api/autoscaling/v2beta1"
 	hpaV2beta2 "k8s.io/api/autoscaling/v2beta2"
 )
@@ -31,6 +32,7 @@ var gvkVPAV1 schema.GroupVersionKind = schema.GroupVersionKind{Group: "autoscali
 var gvkVPAV1beta1 schema.GroupVersionKind = schema.GroupVersionKind{Group: "autoscaling.k8s.io", Version: "v1beta1", Kind: VPAKind}
 var gvkVPAV1beta2 schema.GroupVersionKind = schema.GroupVersionKind{Group: "autoscaling.k8s.io", Version: "v1beta2", Kind: VPAKind}
 var gvkHPAV1 schema.GroupVersionKind = schema.GroupVersionKind{Group: "autoscaling", Version: "v1", Kind: HPAKind}
+var gvkHPAV2 schema.GroupVersionKind = schema.GroupVersionKind{Group: "autoscaling", Version: "v2", Kind: HPAKind}
 var gvkHPAV2beta1 schema.GroupVersionKind = schema.GroupVersionKind{Group: "autoscaling", Version: "v2beta1", Kind: HPAKind}
 var gvkHPAV2beta2 schema.GroupVersionKind = schema.GroupVersionKind{Group: "autoscaling", Version: "v2beta2", Kind: HPAKind}
 
@@ -75,10 +77,17 @@ func buildHPAListV2Beta2Scheme() *runtime.Scheme {
 	return scheme
 }
 
+func buildHPAListV2Scheme() *runtime.Scheme {
+	scheme := runtime.NewScheme()
+	scheme.AddKnownTypeWithName(gvkList, &hpaV2.HorizontalPodAutoscalerList{})
+	return scheme
+}
+
 func buildHPAScheme() *runtime.Scheme {
 	scheme := runtime.NewScheme()
 	scheme.AddKnownTypeWithName(gvkHPAV1, &hpaV1.HorizontalPodAutoscaler{})
 	scheme.AddKnownTypeWithName(gvkHPAV2beta1, &hpaV2beta1.HorizontalPodAutoscaler{})
 	scheme.AddKnownTypeWithName(gvkHPAV2beta2, &hpaV2beta2.HorizontalPodAutoscaler{})
+	scheme.AddKnownTypeWithName(gvkHPAV2, &hpaV2.HorizontalPodAutoscaler{})
 	return scheme
 }
